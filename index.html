@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jet Excellence LLC — Payload Calculator</title>
+  <style>
+    :root {
+      --red:        #C41C1C;
+      --dark:       #2B2B2B;
+      --light-gray: #F0F0F0;
+      --white:      #FFFFFF;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--light-gray);
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    /* ── Header ──────────────────────────────────────── */
+    header {
+      background: var(--dark);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-mark {
+      width: 46px;
+      height: 46px;
+      background: var(--red);
+      color: var(--white);
+      font-size: 22px;
+      font-weight: bold;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border-radius: 2px;
+    }
+
+    .header-text h1 {
+      color: var(--white);
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 0.4px;
+    }
+
+    .header-text p {
+      color: #aaa;
+      font-size: 12px;
+      margin-top: 3px;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Main layout ─────────────────────────────────── */
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 20px 16px;
+    }
+
+    .page-heading {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .page-heading h2 {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--dark);
+    }
+
+    .page-heading p {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 760px) {
+      .calc-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Cards ───────────────────────────────────────── */
+    .card {
+      background: var(--white);
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: var(--red);
+      color: var(--white);
+      padding: 14px 22px;
+    }
+
+    .card-header h3 {
+      font-size: 14px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .card-header p {
+      font-size: 11px;
+      opacity: 0.85;
+      margin-top: 3px;
+    }
+
+    .card-body {
+      padding: 22px;
+    }
+
+    /* ── Weight reference box ────────────────────────── */
+    .weight-ref {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 5px 12px;
+      background: var(--light-gray);
+      border-left: 3px solid var(--red);
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .weight-ref .wl { color: #666; }
+    .weight-ref .wv { font-weight: bold; text-align: right; }
+
+    /* ── Form ────────────────────────────────────────── */
+    .form-group { margin-bottom: 14px; }
+
+    .form-group:last-of-type { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: bold;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #ddd;
+      border-radius: 3px;
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+      color: var(--dark);
+      background: var(--white);
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--red);
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+
+    /* ── Result panel ────────────────────────────────── */
+    .result {
+      margin-top: 18px;
+      border-radius: 4px;
+      padding: 14px 18px;
+    }
+
+    .result.hidden { display: none; }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .result-row strong { color: var(--dark); }
+
+    .result-divider {
+      border: none;
+      border-top: 1px solid rgba(0,0,0,0.10);
+      margin: 10px 0;
+    }
+
+    .result-cushion {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--dark);
+    }
+
+    .result-cushion span:first-child {
+      font-size: 13px;
+      color: #555;
+      font-weight: normal;
+    }
+
+    .status-badge {
+      display: block;
+      text-align: center;
+      padding: 9px 14px;
+      border-radius: 3px;
+      font-weight: bold;
+      font-size: 13px;
+      margin-top: 12px;
+      letter-spacing: 0.2px;
+    }
+
+    /* Status variants */
+    .s-clear  { background:#e8f5e9; border:1.5px solid #2e7d32; color:#1b5e20; }
+    .s-ok     { background:#FFF3CD; border:1.5px solid #c9a227; color:#6D4C00; }
+    .s-tight  { background:#fff3e0; border:1.5px solid #ef6c00; color:#bf360c; }
+    .s-over   { background:#ffebee; border:1.5px solid #c41c1c; color:#c41c1c; }
+
+    .bg-clear { background:#f1f8e9; }
+    .bg-ok    { background:#FFF3CD; }
+    .bg-tight { background:#fff8f0; }
+    .bg-over  { background:#fff5f5; }
+
+    /* ── BEW unavailable notice ──────────────────────── */
+    .bew-unavail {
+      display: none;
+      background: #fff3e0;
+      border: 1.5px solid #ef6c00;
+      border-radius: 3px;
+      padding: 11px 14px;
+      font-size: 13px;
+      color: #bf360c;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    /* ── Disclaimer ──────────────────────────────────── */
+    .disclaimer {
+      margin-top: 28px;
+      padding: 14px 18px;
+      background: var(--dark);
+      color: #999;
+      border-radius: 4px;
+      font-size: 11.5px;
+      line-height: 1.65;
+    }
+
+    .disclaimer strong { color: var(--white); }
+
+    /* ── Footer ──────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">J</div>
+  <div class="header-text">
+    <h1>Jet Excellence LLC</h1>
+    <p>Citation X Fleet &nbsp;·&nbsp; Max Payload Calculator</p>
+  </div>
+</header>
+
+<main>
+  <div class="page-heading">
+    <h2>Max Payload Remaining</h2>
+    <p>Citation X &nbsp;·&nbsp; MZFW 24,400 lbs &nbsp;·&nbsp; BOW = BEW + 700 lbs crew allowance</p>
+  </div>
+
+  <div class="calc-grid">
+
+    <!-- ── CALCULATOR 1: Generic Conservative ────────── -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Calculator 1 &mdash; Generic Conservative</h3>
+        <p>Anchored to N760XJ &nbsp;·&nbsp; BEW 22,015 lbs</p>
+      </div>
+      <div class="card-body">
+
+        <div class="weight-ref">
+          <span class="wl">BEW (N760XJ)</span><span class="wv">22,015 lbs</span>
+          <span class="wl">BOW</span>          <span class="wv">22,715 lbs</span>
+          <span class="wl">MZFW</span>         <span class="wv">24,400 lbs</span>
+          <span class="wl">Max Payload</span> <span class="wv">1,685 lbs</span>
+        </div>
+
+        <div class="form-group">
+          <label for="c1-full">Full Payload (lbs)</label>
+          <input type="number" id="c1-full" min="0" value="0" oninput="calcGeneric()">
+        </div>
+
+        <div id="c1-result" class="result hidden"></div>
+
+      </div>
+    </div>
+
+    <!-- ── CALCULATOR 2: Tail Specific ───────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Calculator 2 &mdash; Tail Specific</h3>
+        <p>Select tail number &nbsp;·&nbsp; BEW auto-populates</p>
+      </div>
+      <div class="card-body">
+
+        <div class="form-group">
+          <label for="c2-tail">Tail Number</label>
+          <select id="c2-tail" onchange="onTailChange()">
+            <option value="">— Select Tail —</option>
+          </select>
+        </div>
+
+        <div class="weight-ref" id="c2-ref" style="display:none;">
+          <span class="wl">BEW</span>         <span class="wv" id="c2-bew-val">—</span>
+          <span class="wl">BOW</span>         <span class="wv" id="c2-bow-val">—</span>
+          <span class="wl">MZFW</span>        <span class="wv">24,400 lbs</span>
+          <span class="wl">Max Payload</span><span class="wv" id="c2-mp-val">—</span>
+        </div>
+
+        <div class="bew-unavail" id="c2-unavail">
+          ⚠&nbsp; BEW Unavailable — Contact Dispatch for current weight data.
+        </div>
+
+        <div id="c2-inputs" style="display:none;">
+          <div class="form-group">
+            <label for="c2-paxwt">Total PAX Weight (lbs)</label>
+            <input type="number" id="c2-paxwt" min="0" value="0" oninput="calcTail()">
+          </div>
+          <div class="form-group">
+            <label for="c2-bags">Baggage Weight (lbs)</label>
+            <input type="number" id="c2-bags" min="0" value="0" oninput="calcTail()">
+          </div>
+        </div>
+
+        <div id="c2-result" class="result hidden"></div>
+
+      </div>
+    </div>
+
+  </div><!-- /.calc-grid -->
+
+  <div class="disclaimer">
+    <strong>Operational Notice:</strong> These calculations are planning estimates only. All weights must be verified against current aircraft documentation, Weight &amp; Balance data, and dispatch release before flight. Results do not substitute for official dispatch authorization or PIC sign-off.
+  </div>
+</main>
+
+<footer>
+  &copy; 2025 Jet Excellence LLC &nbsp;&middot;&nbsp; Internal Use Only
+</footer>
+
+<script>
+  // ── Fleet data ────────────────────────────────────────────────
+  const FLEET = [
+    { tail: 'N100MA', bew: 21756 },
+    { tail: 'N399LF', bew: 21950 },
+    { tail: 'N478PJ', bew: 21811 },
+    { tail: 'N577JC', bew: 21675 },
+    { tail: 'N621FP', bew: 21906 },
+    { tail: 'N716XJ', bew: 21659 },
+    { tail: 'N717XJ', bew: 21829 },
+    { tail: 'N719XJ', bew: 21805 },
+    { tail: 'N720XJ', bew: 21789 },
+    { tail: 'N726XJ', bew: 21786 },
+    { tail: 'N747XJ', bew: 21802 },
+    { tail: 'N751XJ', bew: null  },   // BEW Unavailable
+    { tail: 'N753XJ', bew: 21773 },
+    { tail: 'N760XJ', bew: 22015 },
+    { tail: 'N764XJ', bew: 21878 },
+    { tail: 'N765XJ', bew: 22133 },
+    { tail: 'N774XJ', bew: 21900 },
+    { tail: 'N780XJ', bew: 21759 },
+    { tail: 'N782XJ', bew: 21885 },
+    { tail: 'N783MC', bew: 21778 },
+    { tail: 'N784XJ', bew: 21596 },
+    { tail: 'N790XJ', bew: 21722 },
+    { tail: 'N793XJ', bew: 21539 },
+    { tail: 'N794XJ', bew: 21866 },
+    { tail: 'N808GG', bew: 21745 },
+    { tail: 'N946TX', bew: 21679 },
+  ];
+
+  const MZFW          = 24400;
+  const CREW_ALLOW    = 700;
+
+  // ── Populate dropdown ─────────────────────────────────────────
+  const sel = document.getElementById('c2-tail');
+  FLEET.forEach(a => {
+    const opt       = document.createElement('option');
+    opt.value       = a.tail;
+    opt.textContent = a.bew === null
+      ? `${a.tail}  (BEW Unavailable)`
+      : a.tail;
+    sel.appendChild(opt);
+  });
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function fmt(lbs) {
+    return Math.abs(lbs).toLocaleString('en-US') + ' lbs';
+  }
+
+  function getStatus(remaining) {
+    if (remaining >= 500) return { label: '✓  CLEAR',                        key: 'clear' };
+    if (remaining >= 200) return { label: '✓  OK — Monitor',                 key: 'ok'    };
+    if (remaining >= 1)   return { label: '⚡  TIGHT — Verify with Dispatch', key: 'tight' };
+    return                       { label: '⚠  OVER MAX PAYLOAD',             key: 'over'  };
+  }
+
+  function renderResult(elId, maxPayload, payloadUsed, remaining, breakdown) {
+    const el     = document.getElementById(elId);
+    const status = getStatus(remaining);
+    const sign   = remaining < 0 ? '−' : '';
+    const cushionDisplay = sign + fmt(remaining);
+
+    el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
+    el.classList.add('bg-' + status.key);
+
+    // Optional line-item breakdown (used by Calc 2)
+    const breakdownHTML = breakdown
+      ? breakdown.map(r => `
+          <div class="result-row">
+            <span>${r.label}</span>
+            <span>${fmt(r.value)}</span>
+          </div>`).join('')
+      : '';
+
+    el.innerHTML = `
+      <div class="result-row">
+        <span>Max Payload</span>
+        <strong>${fmt(maxPayload)}</strong>
+      </div>
+      ${breakdownHTML}
+      <div class="result-row">
+        <span>Total Payload Input</span>
+        <span>${fmt(payloadUsed)}</span>
+      </div>
+      <hr class="result-divider">
+      <div class="result-cushion">
+        <span>Remaining Cushion</span>
+        <span>${cushionDisplay}</span>
+      </div>
+      <div class="status-badge s-${status.key}">${status.label}</div>
+    `;
+  }
+
+  // ── Calculator 1 — Generic Conservative ──────────────────────
+  function calcGeneric() {
+    const used = Math.max(0, parseFloat(document.getElementById('c1-full').value) || 0);
+
+    const BOW        = 22015 + CREW_ALLOW;   // 22,715
+    const maxPayload = MZFW - BOW;           // 1,685
+    const remaining  = maxPayload - used;
+
+    renderResult('c1-result', maxPayload, used, remaining);
+  }
+
+  // ── Calculator 2 — Tail Specific ─────────────────────────────
+  function onTailChange() {
+    const tailVal = document.getElementById('c2-tail').value;
+    const refBox  = document.getElementById('c2-ref');
+    const unavail = document.getElementById('c2-unavail');
+    const inputs  = document.getElementById('c2-inputs');
+    const result  = document.getElementById('c2-result');
+
+    // Reset
+    refBox.style.display  = 'none';
+    unavail.style.display = 'none';
+    inputs.style.display  = 'none';
+    result.classList.add('hidden');
+
+    if (!tailVal) return;
+
+    const ac = FLEET.find(a => a.tail === tailVal);
+
+    if (!ac || ac.bew === null) {
+      unavail.style.display = 'block';
+      return;
+    }
+
+    const BOW        = ac.bew + CREW_ALLOW;
+    const maxPayload = MZFW - BOW;
+
+    document.getElementById('c2-bew-val').textContent = fmt(ac.bew);
+    document.getElementById('c2-bow-val').textContent = fmt(BOW);
+    document.getElementById('c2-mp-val').textContent  = fmt(maxPayload);
+
+    refBox.style.display = 'grid';
+    inputs.style.display = 'block';
+
+    // Reset inputs to defaults on tail switch
+    document.getElementById('c2-paxwt').value = 0;
+    document.getElementById('c2-bags').value  = 0;
+  }
+
+  function calcTail() {
+    const tailVal = document.getElementById('c2-tail').value;
+    if (!tailVal) return;
+
+    const ac = FLEET.find(a => a.tail === tailVal);
+    if (!ac || ac.bew === null) return;
+
+    const paxWt = Math.max(0, parseFloat(document.getElementById('c2-paxwt').value) || 0);
+    const bags  = Math.max(0, parseFloat(document.getElementById('c2-bags').value)  || 0);
+
+    const BOW        = ac.bew + CREW_ALLOW;
+    const maxPayload = MZFW - BOW;
+    const used       = paxWt + bags;
+    const remaining  = maxPayload - used;
+
+    const breakdown = [
+      { label: 'Total PAX Weight', value: paxWt },
+      { label: 'Baggage Weight',   value: bags  },
+    ];
+    renderResult('c2-result', maxPayload, used, remaining, breakdown);
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  calcGeneric();
+</script>
+
+</body>
+</html>
