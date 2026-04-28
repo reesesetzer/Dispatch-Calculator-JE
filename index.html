@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jet Excellence LLC — Payload Calculator</title>
+  <title>Jet Excellence LLC — Dispatch Calculator</title>
   <style>
     :root {
       --red:        #C41C1C;
+      --red-dark:   #9a1414;
       --dark:       #2B2B2B;
       --light-gray: #F0F0F0;
       --white:      #FFFFFF;
+      --muted:      #666;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,27 +61,57 @@
       letter-spacing: 0.2px;
     }
 
+    /* ── Tab Bar ─────────────────────────────────────── */
+    nav.tabs {
+      background: var(--dark);
+      border-top: 1px solid #444;
+      display: flex;
+      overflow-x: auto;
+    }
+    nav.tabs button {
+      background: transparent;
+      color: #ccc;
+      border: none;
+      padding: 13px 22px;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    nav.tabs button:hover { color: var(--white); background: #333; }
+    nav.tabs button.active {
+      color: var(--white);
+      border-bottom-color: var(--red);
+    }
+
     /* ── Main layout ─────────────────────────────────── */
     main {
       max-width: 1080px;
       margin: 0 auto;
-      padding: 32px 20px 16px;
+      padding: 28px 20px 16px;
     }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
 
     .page-heading {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .page-heading h2 {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
       color: var(--dark);
     }
 
     .page-heading p {
       font-size: 13px;
-      color: #666;
+      color: var(--muted);
       margin-top: 6px;
     }
 
@@ -88,9 +120,10 @@
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
+    .calc-grid.single { grid-template-columns: 1fr; max-width: 720px; margin: 0 auto; }
 
     @media (max-width: 760px) {
-      .calc-grid { grid-template-columns: 1fr; }
+      .calc-grid, .calc-grid.single { grid-template-columns: 1fr; }
     }
 
     /* ── Cards ───────────────────────────────────────── */
@@ -120,9 +153,7 @@
       margin-top: 3px;
     }
 
-    .card-body {
-      padding: 22px;
-    }
+    .card-body { padding: 22px; }
 
     /* ── Weight reference box ────────────────────────── */
     .weight-ref {
@@ -137,13 +168,17 @@
       border-radius: 0 3px 3px 0;
     }
 
-    .weight-ref .wl { color: #666; }
+    .weight-ref .wl { color: var(--muted); }
     .weight-ref .wv { font-weight: bold; text-align: right; }
 
     /* ── Form ────────────────────────────────────────── */
     .form-group { margin-bottom: 14px; }
-
     .form-group:last-of-type { margin-bottom: 0; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
 
     label {
       display: block;
@@ -155,7 +190,17 @@
       margin-bottom: 5px;
     }
 
+    .label-hint {
+      font-weight: normal;
+      text-transform: none;
+      letter-spacing: 0;
+      color: #999;
+      font-size: 10px;
+      margin-left: 6px;
+    }
+
     input[type="number"],
+    input[type="text"],
     select {
       width: 100%;
       padding: 9px 12px;
@@ -169,16 +214,12 @@
       -moz-appearance: textfield;
     }
 
-    input[type="number"]:focus,
-    select:focus {
+    input:focus, select:focus {
       outline: none;
       border-color: var(--red);
     }
 
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      opacity: 1;
-    }
+    input[type="text"] { text-transform: uppercase; }
 
     /* ── Result panel ────────────────────────────────── */
     .result {
@@ -186,7 +227,6 @@
       border-radius: 4px;
       padding: 14px 18px;
     }
-
     .result.hidden { display: none; }
 
     .result-row {
@@ -255,6 +295,76 @@
       margin-bottom: 16px;
     }
 
+    /* ── PIC table ───────────────────────────────────── */
+    .pic-search {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 3px;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    .pic-search:focus { outline: none; border-color: var(--red); }
+
+    .pic-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .pic-table th {
+      background: var(--dark);
+      color: var(--white);
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .pic-table th:hover { background: #404040; }
+    .pic-table th.sort-asc::after  { content: ' ▲'; font-size: 10px; }
+    .pic-table th.sort-desc::after { content: ' ▼'; font-size: 10px; }
+    .pic-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .pic-table tr:hover td { background: #fafafa; }
+    .pic-table .col-num   { text-align: right; font-variant-numeric: tabular-nums; }
+    .pic-table .below     { color: #1b5e20; font-weight: bold; }
+    .pic-table .over      { color: #c41c1c; font-weight: bold; }
+    .pic-table .at-or-near{ color: #6D4C00; }
+    .pic-table .nodata    { color: #bbb; font-style: italic; }
+
+    .fleet-summary {
+      background: var(--light-gray);
+      border-left: 3px solid var(--red);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      border-radius: 0 3px 3px 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px 12px;
+    }
+    .fleet-summary .fl-l { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .fleet-summary .fl-v { font-weight: bold; font-size: 15px; }
+
+    @media (max-width: 600px) { .fleet-summary { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ── Reasoning / details list ────────────────────── */
+    .reasoning {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: #f8f8f8;
+      border-radius: 3px;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #444;
+    }
+    .reasoning strong { color: var(--dark); }
+    .reasoning ul { margin-left: 20px; margin-top: 4px; }
+
     /* ── Disclaimer ──────────────────────────────────── */
     .disclaimer {
       margin-top: 28px;
@@ -275,6 +385,90 @@
       font-size: 11px;
       color: #aaa;
     }
+    footer .tagline {
+      display: block;
+      margin-top: 4px;
+      font-style: italic;
+      color: var(--red);
+      font-size: 10.5px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Slack-share + JI link buttons ───────────────── */
+    .share-btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 7px 14px;
+      background: var(--dark);
+      color: var(--white);
+      border: none;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .share-btn:hover { background: #404040; }
+    .share-btn.pinned { background: var(--red); }
+    .share-btn.pinned:hover { background: var(--red-dark); }
+
+    .ji-link {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 11px;
+      color: var(--red);
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .ji-link:hover { text-decoration: underline; }
+
+    /* ── Print stylesheet — Trip-Pack-style one-page export ─────── */
+    @media print {
+      /* Hide all chrome */
+      header, nav.tabs, footer, .disclaimer,
+      input[type="number"], input[type="text"], input[type="datetime-local"],
+      select, .form-group, .form-row, .pic-search,
+      button, .share-btn, .ji-link {
+        display: none !important;
+      }
+      /* Hide every tab pane except the active one */
+      .tab-pane:not(.active) { display: none !important; }
+      /* Strip background colors / shadows for ink-friendly printing */
+      body { background: white !important; color: black !important; }
+      .card { box-shadow: none !important; border: 1px solid #ccc !important; }
+      .card-header { background: white !important; color: black !important;
+                     border-bottom: 2px solid var(--red) !important; }
+      .card-header h3, .card-header p { color: black !important; }
+      .result { background: white !important; border: 1px solid #ccc !important; }
+      .reasoning { background: white !important; border: 1px solid #ccc !important; }
+      /* Insert a print-only header on every printed page */
+      body::before {
+        content: "JET EXCELLENCE OPERATIONS — Trip Pack";
+        display: block;
+        color: var(--red);
+        font-weight: bold;
+        font-size: 14px;
+        padding: 12px 16px;
+        border-bottom: 2px solid var(--red);
+        margin-bottom: 16px;
+      }
+      /* Insert the JE tagline on the printed page footer */
+      main::after {
+        content: "One team. One standard. Excellence.  ·  Tooling aid only — verify with FuelerLinx + dispatch";
+        display: block;
+        margin-top: 24px;
+        padding-top: 8px;
+        border-top: 1px solid #ccc;
+        color: #666;
+        font-size: 10px;
+        font-style: italic;
+        text-align: center;
+      }
+      .calc-grid { display: block !important; }
+      .card { margin-bottom: 16px; page-break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
@@ -283,144 +477,817 @@
   <div class="logo-mark">J</div>
   <div class="header-text">
     <h1>Jet Excellence LLC</h1>
-    <p>Citation X Fleet &nbsp;·&nbsp; Max Payload Calculator</p>
+    <p>Citation X Fleet &nbsp;·&nbsp; Dispatch Calculator</p>
   </div>
 </header>
 
+<nav class="tabs">
+  <button class="active" data-tab="payload">Max Payload</button>
+  <button data-tab="nonstop">Nonstop Feasibility</button>
+  <button data-tab="runway">Runway &amp; OAT</button>
+  <button data-tab="gate">Pre-Flight Gate</button>
+  <button data-tab="tailfind">Tail Finder</button>
+  <button data-tab="activity">Fleet Activity</button>
+  <span style="flex: 1;"></span>
+  <button onclick="window.print()" title="Print active tab as a one-page brief"
+          style="background: transparent; color: #ccc; border: none; padding: 13px 18px;
+                 font-size: 12px; cursor: pointer;">
+    🖨 Print Trip-Pack
+  </button>
+</nav>
+
 <main>
-  <div class="page-heading">
-    <h2>Max Payload Remaining</h2>
-    <p>Citation X &nbsp;·&nbsp; MZFW 24,400 lbs &nbsp;·&nbsp; BOW = BEW + 700 lbs (avg. crew weight, life raft, stock, crew baggage, etc.)</p>
-  </div>
 
-  <div class="calc-grid">
-
-    <!-- ── CALCULATOR 1: Generic Conservative ────────── -->
-    <div class="card">
-      <div class="card-header">
-        <h3>Calculator 1 &mdash; General Fleet Estimate</h3>
-        <p>Anchored to N760XJ &nbsp;·&nbsp; BEW 22,015 lbs</p>
-      </div>
-      <div class="card-body">
-
-        <div class="weight-ref">
-          <span class="wl">BEW (N760XJ)</span><span class="wv">22,015 lbs</span>
-          <span class="wl">BOW</span>          <span class="wv">22,715 lbs</span>
-          <span class="wl">MZFW</span>         <span class="wv">24,400 lbs</span>
-          <span class="wl">Max Payload</span> <span class="wv">1,685 lbs</span>
-        </div>
-
-        <div class="form-group">
-          <label for="c1-full">Full Payload (lbs)</label>
-          <input type="number" id="c1-full" min="0" value="0" oninput="calcGeneric()">
-        </div>
-
-        <div id="c1-result" class="result hidden"></div>
-
-      </div>
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- TAB 1: MAX PAYLOAD                                       -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="tab-payload" class="tab-pane active">
+    <div class="page-heading">
+      <h2>Max Payload Remaining</h2>
+      <p>Citation X &nbsp;·&nbsp; MZFW 24,400 lbs &nbsp;·&nbsp; BOW = BEW + 700 lbs (avg. crew weight, life raft, stock, crew baggage, etc.)</p>
     </div>
 
-    <!-- ── CALCULATOR 2: Tail Specific ───────────────── -->
-    <div class="card">
-      <div class="card-header">
-        <h3>Calculator 2 &mdash; Tail Specific</h3>
-        <p>Select tail number &nbsp;·&nbsp; BEW auto-populates</p>
-      </div>
-      <div class="card-body">
+    <div class="calc-grid">
 
-        <div class="form-group">
-          <label for="c2-tail">Tail Number</label>
-          <select id="c2-tail" onchange="onTailChange()">
-            <option value="">— Select Tail —</option>
-          </select>
+      <!-- ── CALCULATOR 1: Generic Conservative ────────── -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Calculator 1 &mdash; General Fleet Estimate</h3>
+          <p>Anchored to N760XJ &nbsp;·&nbsp; BEW 22,015 lbs</p>
         </div>
+        <div class="card-body">
 
-        <div class="weight-ref" id="c2-ref" style="display:none;">
-          <span class="wl">BEW</span>         <span class="wv" id="c2-bew-val">—</span>
-          <span class="wl">BOW</span>         <span class="wv" id="c2-bow-val">—</span>
-          <span class="wl">MZFW</span>        <span class="wv">24,400 lbs</span>
-          <span class="wl">Max Payload</span><span class="wv" id="c2-mp-val">—</span>
-        </div>
-
-        <div class="bew-unavail" id="c2-unavail">
-          ⚠&nbsp; BEW Unavailable — Contact Dispatch for current weight data.
-        </div>
-
-        <div id="c2-inputs" style="display:none;">
-          <div class="form-group">
-            <label for="c2-paxwt">Total PAX Weight (lbs)</label>
-            <input type="number" id="c2-paxwt" min="0" value="0" oninput="calcTail()">
+          <div class="weight-ref">
+            <span class="wl">BEW (N760XJ)</span><span class="wv">22,015 lbs</span>
+            <span class="wl">BOW</span>          <span class="wv">22,715 lbs</span>
+            <span class="wl">MZFW</span>         <span class="wv">24,400 lbs</span>
+            <span class="wl">Max Payload</span>  <span class="wv">1,685 lbs</span>
           </div>
+
           <div class="form-group">
-            <label for="c2-bags">Baggage Weight (lbs)</label>
-            <input type="number" id="c2-bags" min="0" value="0" oninput="calcTail()">
+            <label for="c1-full">Full Payload (lbs)</label>
+            <input type="number" id="c1-full" min="0" value="0" oninput="calcGeneric()">
           </div>
+
+          <div id="c1-result" class="result hidden"></div>
+
         </div>
-
-        <div id="c2-result" class="result hidden"></div>
-
       </div>
+
+      <!-- ── CALCULATOR 2: Tail Specific ───────────────── -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Calculator 2 &mdash; Tail Specific</h3>
+          <p>Select tail number &nbsp;·&nbsp; BEW auto-populates</p>
+        </div>
+        <div class="card-body">
+
+          <div class="form-group">
+            <label for="c2-tail">Tail Number</label>
+            <select id="c2-tail" onchange="onTailChange()">
+              <option value="">— Select Tail —</option>
+            </select>
+          </div>
+
+          <div class="weight-ref" id="c2-ref" style="display:none;">
+            <span class="wl">BEW</span>          <span class="wv" id="c2-bew-val">—</span>
+            <span class="wl">BOW</span>          <span class="wv" id="c2-bow-val">—</span>
+            <span class="wl">MZFW</span>         <span class="wv">24,400 lbs</span>
+            <span class="wl">Max Payload</span>  <span class="wv" id="c2-mp-val">—</span>
+          </div>
+
+          <div class="bew-unavail" id="c2-unavail">
+            ⚠&nbsp; BEW Unavailable — Contact Dispatch for current weight data.
+          </div>
+
+          <div id="c2-inputs" style="display:none;">
+            <div class="form-group">
+              <label for="c2-paxwt">Total PAX Weight (lbs)</label>
+              <input type="number" id="c2-paxwt" min="0" value="0" oninput="calcTail()">
+            </div>
+            <div class="form-group">
+              <label for="c2-bags">Baggage Weight (lbs)</label>
+              <input type="number" id="c2-bags" min="0" value="0" oninput="calcTail()">
+            </div>
+          </div>
+
+          <div id="c2-result" class="result hidden"></div>
+
+        </div>
+      </div>
+
+    </div><!-- /.calc-grid -->
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- TAB 2: NONSTOP FEASIBILITY                               -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="tab-nonstop" class="tab-pane">
+    <div class="page-heading">
+      <h2>Nonstop Feasibility</h2>
+      <p>Trip fuel + 45-min IFR reserve + taxi + climb &nbsp;·&nbsp; per-tail range &amp; fuel capacity check</p>
     </div>
 
-  </div><!-- /.calc-grid -->
+    <div class="calc-grid single">
+      <div class="card">
+        <div class="card-header">
+          <h3>Route &amp; Loading</h3>
+          <p>Plain-English verdict with per-tail range and fuel-capacity reasoning</p>
+        </div>
+        <div class="card-body">
+
+          <div class="form-group">
+            <label for="ns-tail">Tail Number</label>
+            <select id="ns-tail" onchange="calcNonstop()">
+              <option value="">— Select Tail —</option>
+            </select>
+          </div>
+
+          <!-- ── Route + ETD — distance and wind auto-populate from these ── -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ns-dep">DEP Airport <span class="label-hint">(ICAO/IATA)</span></label>
+              <input type="text" id="ns-dep" placeholder="e.g. KTEB or TEB" oninput="_nsAutoFetch()">
+            </div>
+            <div class="form-group">
+              <label for="ns-arr">ARR Airport <span class="label-hint">(ICAO/IATA)</span></label>
+              <input type="text" id="ns-arr" placeholder="e.g. KASE or ASE" oninput="_nsAutoFetch()">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ns-etd">Planned ETD (local) <span class="label-hint">(drives wind lookup)</span></label>
+              <input type="datetime-local" id="ns-etd" onchange="_nsAutoFetch()">
+            </div>
+            <div class="form-group">
+              <label for="ns-pic">Burn-Rate Scenario <span class="label-hint">(planning conservatism)</span></label>
+              <select id="ns-pic" onchange="calcNonstop()">
+                <option value="avg" selected>Fleet average (316 gal/hr)</option>
+                <option value="efficient">Efficient (290 gal/hr — fleet goal)</option>
+                <option value="conservative">Conservative (335 gal/hr — heavy-burn planning)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ns-fl">Cruise Altitude <span class="label-hint">(MEL drops typical cruise)</span></label>
+              <select id="ns-fl" onchange="_nsAutoFetch()">
+                <option value="450" selected>FL450  ·  optimal Citation X cruise (default)</option>
+                <option value="430">FL430  ·  near-optimal</option>
+                <option value="410">FL410</option>
+                <option value="390">FL390</option>
+                <option value="370">FL370</option>
+                <option value="330">FL330  ·  early cruise / heavy</option>
+                <option value="290">FL290  ·  MEL-restricted</option>
+                <option value="250">FL250  ·  MEL floor (RVSM-out etc.)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <!-- placeholder column to keep the row balanced -->
+            </div>
+          </div>
+
+          <!-- ── Auto-populated readouts (read-only from upstream) ── -->
+          <div class="weight-ref" id="ns-derived" style="display:none;">
+            <span class="wl">Great-circle distance</span><span class="wv" id="ns-dist-display">—</span>
+            <span class="wl">Forecast wind aloft (FL390)</span><span class="wv" id="ns-wind-display">—</span>
+          </div>
+          <span id="ns-fetch-status" style="display:block; margin-bottom:14px; font-size: 12px; color: var(--muted);"></span>
+          <!-- Internal hidden values used by calcNonstop. Auto-filled by _nsAutoFetch. -->
+          <input type="hidden" id="ns-dist" value="0">
+          <input type="hidden" id="ns-headwind" value="0">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ns-paxwt">Total PAX Weight (lbs)</label>
+              <input type="number" id="ns-paxwt" min="0" value="0" oninput="calcNonstop()">
+            </div>
+            <div class="form-group">
+              <label for="ns-bags">Baggage Weight (lbs)</label>
+              <input type="number" id="ns-bags" min="0" value="0" oninput="calcNonstop()">
+            </div>
+          </div>
+
+          <div id="ns-result" class="result hidden"></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- TAB 3: RUNWAY & CRITICAL OAT                             -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="tab-runway" class="tab-pane">
+    <div class="page-heading">
+      <h2>Runway &amp; Critical OAT</h2>
+      <p>Required balanced field length at planned takeoff weight &nbsp;·&nbsp; critical OAT (where BFL = available runway)</p>
+    </div>
+
+    <div class="calc-grid single">
+      <div class="card">
+        <div class="card-header">
+          <h3>Departure Performance</h3>
+          <p>Weight-adjusted BFL using (W/MTOW)<sup>1.5</sup> scaling between SL/ISA and 5,000 ft / +20 °C</p>
+        </div>
+        <div class="card-body">
+
+          <div class="form-group">
+            <label for="rw-tail">Tail Number</label>
+            <select id="rw-tail" onchange="calcRunway()">
+              <option value="">— Select Tail —</option>
+            </select>
+          </div>
+
+          <!-- ── Airport + live OAT lookup ───────────────────── -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rw-airport">Airport <span class="label-hint">(ICAO or IATA — auto-fills elev + OAT)</span></label>
+              <input type="text" id="rw-airport" placeholder="e.g. KASE or ASE" oninput="onAirportInput()" onblur="onAirportBlur()">
+            </div>
+            <div class="form-group">
+              <label for="rw-etd">Planned ETD (local) <span class="label-hint">(for OAT forecast)</span></label>
+              <input type="datetime-local" id="rw-etd">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <button type="button" id="rw-fetch-oat" onclick="fetchLiveOat()" style="
+              padding: 9px 14px; background: var(--red); color: var(--white);
+              border: none; border-radius: 3px; font-size: 13px; font-weight: bold;
+              text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
+              transition: background 0.15s;">Fetch Live OAT</button>
+            <span id="rw-fetch-status" style="margin-left: 12px; font-size: 12px; color: var(--muted);"></span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rw-elev">Field Elevation (ft)</label>
+              <input type="number" id="rw-elev" min="0" step="50" value="0" oninput="calcRunway()">
+            </div>
+            <div class="form-group">
+              <label for="rw-toda">Available Runway / TODA (ft)</label>
+              <input type="number" id="rw-toda" min="0" step="100" value="6000" oninput="calcRunway()">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rw-tow">Planned Takeoff Weight (lbs) <span class="label-hint">(or leave 0 to use MTOW)</span></label>
+              <input type="number" id="rw-tow" min="0" step="100" value="0" oninput="calcRunway()">
+            </div>
+            <div class="form-group">
+              <label for="rw-oat">Outside Air Temp / OAT (&deg;F)</label>
+              <input type="number" id="rw-oat" step="1" value="59" oninput="calcRunway()">
+            </div>
+          </div>
+
+          <div id="rw-result" class="result hidden"></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- TAB 5: PRE-FLIGHT GATE                                   -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="tab-gate" class="tab-pane">
+    <div class="page-heading">
+      <h2>Pre-Flight Gate</h2>
+      <p>One-button GO / NO-GO across all GOM 2.4 hard floors &nbsp;·&nbsp; runway, range, fuel, MZFW, MTOW, alternate</p>
+    </div>
+
+    <div class="calc-grid single">
+      <div class="card">
+        <div class="card-header">
+          <h3>Trip Releasability Check</h3>
+          <p>All checks run together; a single concern fails the gate</p>
+        </div>
+        <div class="card-body">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gt-tail">Tail Number</label>
+              <select id="gt-tail" onchange="calcGate()">
+                <option value="">— Select Tail —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="gt-pic">Burn-Rate Scenario</label>
+              <select id="gt-pic" onchange="calcGate()">
+                <option value="avg" selected>Fleet average (316 gal/hr)</option>
+                <option value="efficient">Efficient (290 gal/hr)</option>
+                <option value="conservative">Conservative (335 gal/hr)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gt-dep">DEP Airport (ICAO/IATA)</label>
+              <input type="text" id="gt-dep" placeholder="e.g. KTEB" oninput="calcGate()">
+            </div>
+            <div class="form-group">
+              <label for="gt-arr">ARR Airport (ICAO/IATA)</label>
+              <input type="text" id="gt-arr" placeholder="e.g. KASE" oninput="calcGate()">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gt-paxwt">Total PAX Weight (lbs)</label>
+              <input type="number" id="gt-paxwt" min="0" value="0" oninput="calcGate()">
+            </div>
+            <div class="form-group">
+              <label for="gt-bags">Baggage Weight (lbs)</label>
+              <input type="number" id="gt-bags" min="0" value="0" oninput="calcGate()">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gt-oat-dep">DEP OAT (&deg;F) <span class="label-hint">(for runway BFL check)</span></label>
+              <input type="number" id="gt-oat-dep" step="1" value="59" oninput="calcGate()">
+            </div>
+            <div class="form-group">
+              <label for="gt-headwind">Headwind (kt) <span class="label-hint">(+ slows, &minus; speeds up)</span></label>
+              <input type="number" id="gt-headwind" step="1" value="0" oninput="calcGate()">
+            </div>
+          </div>
+
+          <div id="gt-result" class="result hidden"></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- TAB 6: TAIL FINDER                                       -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="tab-tailfind" class="tab-pane">
+    <div class="page-heading">
+      <h2>Tail Finder</h2>
+      <p>Given a load + route, ranks fleet tails by which fits best &nbsp;·&nbsp; lightest BEW first &nbsp;·&nbsp; live BEW data</p>
+    </div>
+
+    <div class="calc-grid single">
+      <div class="card">
+        <div class="card-header">
+          <h3>Best Tail for This Mission</h3>
+          <p>All tails ranked by remaining payload cushion at this load + fuel</p>
+        </div>
+        <div class="card-body">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tf-dist">Distance (nm) <span class="label-hint">(round-trip not needed; one-way)</span></label>
+              <input type="number" id="tf-dist" min="0" step="1" value="0" oninput="calcTailFinder()">
+            </div>
+            <div class="form-group">
+              <label for="tf-pic">Burn-Rate Scenario</label>
+              <select id="tf-pic" onchange="calcTailFinder()">
+                <option value="avg" selected>Fleet average (316 gal/hr)</option>
+                <option value="efficient">Efficient (290 gal/hr)</option>
+                <option value="conservative">Conservative (335 gal/hr)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tf-paxwt">Total PAX Weight (lbs)</label>
+              <input type="number" id="tf-paxwt" min="0" value="0" oninput="calcTailFinder()">
+            </div>
+            <div class="form-group">
+              <label for="tf-bags">Baggage Weight (lbs)</label>
+              <input type="number" id="tf-bags" min="0" value="0" oninput="calcTailFinder()">
+            </div>
+          </div>
+
+          <div id="tf-result"></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- TAB 7: FLEET ACTIVITY REFERENCE                          -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="tab-activity" class="tab-pane">
+    <div class="page-heading">
+      <h2>Fleet Activity Reference</h2>
+      <p>9-month historical pattern from Citation X activity log &nbsp;·&nbsp; 5,066 legs / 11,133 block hrs / 2,408 trips</p>
+    </div>
+
+    <div class="calc-grid">
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Top Routes</h3>
+          <p>DEP &rarr; ARR pairs by frequency</p>
+        </div>
+        <div class="card-body">
+          <div id="act-routes"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Top Airports</h3>
+          <p>Most-flown DEP+ARR by op count</p>
+        </div>
+        <div class="card-body">
+          <div id="act-airports"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
   <div class="disclaimer">
-    <strong>Operational Notice:</strong> These calculations are planning estimates only. All weights must be verified against current aircraft documentation, Weight &amp; Balance data, and dispatch release before flight. Results do not substitute for official dispatch authorization or PIC sign-off.
+    <strong>Operational Notice:</strong> These calculations are planning estimates only. All weights, runway, fuel, and performance figures must be verified against current AFM/QRH, dispatch release, and forecast OAT before flight. Results do not substitute for official dispatch authorization or PIC sign-off. Fuel-burn data reflects historical PIC performance and is not a substitute for current flight-plan fuel from FuelerLinx / Foreflight.
   </div>
+
 </main>
 
 <footer>
-  &copy; 2025 Jet Excellence LLC &nbsp;&middot;&nbsp; Internal Use Only
+  &copy; 2026 Jet Excellence LLC &nbsp;&middot;&nbsp; Internal Use Only
+  <span class="tagline">One team. One standard. Excellence.</span>
 </footer>
 
 <script>
-  // ── Fleet data ────────────────────────────────────────────────
-  const FLEET = [
-    { tail: 'N100MA', bew: 21756 },
-    { tail: 'N399LF', bew: 21950 },
-    { tail: 'N478PJ', bew: 21811 },
-    { tail: 'N577JC', bew: 21675 },
-    { tail: 'N621FP', bew: 21906 },
-    { tail: 'N716XJ', bew: 21659 },
-    { tail: 'N717XJ', bew: 21829 },
-    { tail: 'N719XJ', bew: 21805 },
-    { tail: 'N720XJ', bew: 21789 },
-    { tail: 'N726XJ', bew: 21786 },
-    { tail: 'N747XJ', bew: 21802 },
-    { tail: 'N751XJ', bew: null  },   // BEW Unavailable
-    { tail: 'N753XJ', bew: 21773 },
-    { tail: 'N760XJ', bew: 22015 },
-    { tail: 'N764XJ', bew: 21878 },
-    { tail: 'N765XJ', bew: 22133 },
-    { tail: 'N774XJ', bew: 21900 },
-    { tail: 'N780XJ', bew: 21759 },
-    { tail: 'N782XJ', bew: 21885 },
-    { tail: 'N783MC', bew: 21778 },
-    { tail: 'N784XJ', bew: 21596 },
-    { tail: 'N790XJ', bew: 21722 },
-    { tail: 'N793XJ', bew: 21539 },
-    { tail: 'N794XJ', bew: 21866 },
-    { tail: 'N808GG', bew: 21745 },
-    { tail: 'N946TX', bew: 21679 },
-  ];
+  // ═════════════════════════════════════════════════════════════
+  // DATA — baked at build time from C:\JetInsightBot\perf_cache\
+  // ═════════════════════════════════════════════════════════════
 
-  const MZFW          = 24400;
-  const CREW_ALLOW    = 700;
+  // Fleet BEW (lbs) — authoritative source: payload_alert_config.FLEET_BEW
+  const FLEET_BEW = {
+    "N100MA": 21756, "N399LF": 21950, "N478PJ": 21811, "N577JC": 21675,
+    "N621FP": 21906, "N716XJ": 21659, "N717XJ": 21829, "N719XJ": 21805,
+    "N720XJ": 21789, "N726XJ": 21786, "N747XJ": 21802, "N751XJ": null,
+    "N753XJ": 21773, "N760XJ": 22015, "N764XJ": 21878, "N765XJ": 22133,
+    "N774XJ": 21900, "N780XJ": 21759, "N782XJ": 21885, "N783MC": 21778,
+    "N784XJ": 21596, "N790XJ": 21722, "N793XJ": 21539, "N794XJ": 21866,
+    "N808GG": 21745, "N946TX": 21679,
+  };
 
-  // ── Populate dropdown ─────────────────────────────────────────
-  const sel = document.getElementById('c2-tail');
-  FLEET.forEach(a => {
-    const opt       = document.createElement('option');
-    opt.value       = a.tail;
-    opt.textContent = a.bew === null
-      ? `${a.tail}  (BEW Unavailable)`
-      : a.tail;
-    sel.appendChild(opt);
-  });
+  // Per-tail performance (FuelerLinx) — MTOW, BFL refs, range, fuel capacity
+  const FLEET_PERF = {
+    "N100MA": { mtow: 35700, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "A"     },
+    "N399LF": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N577JC": { mtow: 35700, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "A"     },
+    "N621FP": { mtow: 35700, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "A"     },
+    "N716XJ": { mtow: 36100, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "MIXED" },
+    "N717XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N719XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N720XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N726XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N747XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N753XJ": { mtow: 36100, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "MIXED" },
+    "N760XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N764XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N765XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N774XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N780XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N782XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N783MC": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N784XJ": { mtow: 36100, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "MIXED" },
+    "N790XJ": { mtow: 36100, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "MIXED" },
+    "N793XJ": { mtow: 35700, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "A"     },
+    "N794XJ": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+    "N808GG": { mtow: 36100, mlw: 31800, range_nm: 2600, bfl_sl: 5300, bfl_5k20: 7370, fuel_gal: 1930, template: "MIXED" },
+    "N946TX": { mtow: 36100, mlw: 31800, range_nm: 2700, bfl_sl: 3770, bfl_5k20: 7250, fuel_gal: 1930, template: "B"     },
+  };
 
-  // ── Helpers ───────────────────────────────────────────────────
+  // Citation X fleet burn-rate reference — anonymous scenarios only.
+  // Per-pilot detail intentionally NOT carried in this client-side bundle
+  // (privacy: this calculator is public-facing). Scenarios cover the
+  // operational range — efficient (matches the 290 gal/hr fleet goal),
+  // average (current ~30d fleet rolling), conservative (heavy-burn
+  // planning floor, ~1 std dev above fleet avg).
+  const PILOT_FUEL_REPORT = {
+    fleet_goal_gal_hr: 290,
+    fleet_avg: { d30: 316.1, d60: 315.5, d90: 317.4, ytd: 317.5 },
+    scenarios: {
+      efficient:    290,
+      avg:          316,
+      conservative: 335,
+    },
+    // Pilots array intentionally empty — kept as field so any code that
+    // iterates it gracefully no-ops instead of throwing.
+    pilots: [],
+  };
+
+
+  // ═════════════════════════════════════════════════════════════
+  // AIRPORT DB — ICAO + IATA + lat/lon/elev for live OAT lookup
+  // Curated from OurAirports CSV (~220 airports JE typically operates to)
+  // ═════════════════════════════════════════════════════════════
+  const AIRPORT_DB = {
+    "CYEG": { iata: "YEG", lat: 53.3097, lon: -113.58, elev: 2373, name: "Edmonton International" },
+    "CYHM": { iata: "YHM", lat: 43.1735, lon: -79.9312, elev: 780, name: "John C. Munro Hamilton" },
+    "CYHZ": { iata: "YHZ", lat: 44.8808, lon: -63.5086, elev: 477, name: "Halifax / Stanfield" },
+    "CYOW": { iata: "YOW", lat: 45.3225, lon: -75.6692, elev: 374, name: "Ottawa Macdonald-Cartier" },
+    "CYQB": { iata: "YQB", lat: 46.7911, lon: -71.3933, elev: 244, name: "Quebec Jean Lesage" },
+    "CYTZ": { iata: "YTZ", lat: 43.6279, lon: -79.3955, elev: 252, name: "Billy Bishop Toronto City" },
+    "CYUL": { iata: "YUL", lat: 45.4678, lon: -73.7423, elev: 118, name: "Montreal Trudeau" },
+    "CYVR": { iata: "YVR", lat: 49.1939, lon: -123.184, elev: 14, name: "Vancouver International" },
+    "CYYC": { iata: "YYC", lat: 51.1188, lon: -114.0099, elev: 3557, name: "Calgary International" },
+    "CYYZ": { iata: "YYZ", lat: 43.6759, lon: -79.6294, elev: 569, name: "Toronto Pearson" },
+    "KACK": { iata: "ACK", lat: 41.2531, lon: -70.0602, elev: 47, name: "Nantucket Memorial" },
+    "KADS": { iata: "ADS", lat: 32.9686, lon: -96.8364, elev: 644, name: "Addison Airport" },
+    "KALB": { iata: "ALB", lat: 42.7483, lon: -73.8017, elev: 285, name: "Albany International" },
+    "KAMA": { iata: "AMA", lat: 35.2179, lon: -101.7064, elev: 3607, name: "Amarillo International" },
+    "KAPA": { iata: "APA", lat: 39.5701, lon: -104.849, elev: 5885, name: "Centennial" },
+    "KAPC": { iata: "APC", lat: 38.2132, lon: -122.281, elev: 35, name: "Napa County" },
+    "KAPF": { iata: "APF", lat: 26.1526, lon: -81.7753, elev: 8, name: "Naples Municipal" },
+    "KARW": { iata: "BFT", lat: 32.4122, lon: -80.6344, elev: 10, name: "Beaufort Executive" },
+    "KASE": { iata: "ASE", lat: 39.2232, lon: -106.869, elev: 7820, name: "Aspen-Pitkin County" },
+    "KATL": { iata: "ATL", lat: 33.6367, lon: -84.4281, elev: 1026, name: "Hartsfield Jackson Atlanta" },
+    "KAUS": { iata: "AUS", lat: 30.1975, lon: -97.662, elev: 542, name: "Austin Bergstrom" },
+    "KAVL": { iata: "AVL", lat: 35.4355, lon: -82.5419, elev: 2165, name: "Asheville Regional" },
+    "KAVQ": { iata: "AVW", lat: 32.4091, lon: -111.2162, elev: 2031, name: "Marana Regional" },
+    "KBCT": { iata: "BCT", lat: 26.3785, lon: -80.1077, elev: 13, name: "Boca Raton" },
+    "KBDL": { iata: "BDL", lat: 41.9386, lon: -72.688, elev: 173, name: "Bradley International" },
+    "KBED": { iata: "BED", lat: 42.47, lon: -71.289, elev: 133, name: "Hanscom Field" },
+    "KBFI": { iata: "BFI", lat: 47.527, lon: -122.2999, elev: 21, name: "Boeing Field" },
+    "KBFL": { iata: "BFL", lat: 35.4336, lon: -119.057, elev: 510, name: "Meadows Field" },
+    "KBHM": { iata: "BHM", lat: 33.5629, lon: -86.7507, elev: 650, name: "Birmingham-Shuttlesworth" },
+    "KBIL": { iata: "BIL", lat: 45.8089, lon: -108.5412, elev: 3652, name: "Billings Logan" },
+    "KBJC": { iata: "BJC", lat: 39.9088, lon: -105.117, elev: 5673, name: "Rocky Mountain Metropolitan" },
+    "KBKL": { iata: "BKL", lat: 41.5175, lon: -81.6833, elev: 583, name: "Burke Lakefront" },
+    "KBNA": { iata: "BNA", lat: 36.1245, lon: -86.6782, elev: 599, name: "Nashville International" },
+    "KBOS": { iata: "BOS", lat: 42.362, lon: -71.0079, elev: 20, name: "Boston Logan" },
+    "KBUF": { iata: "BUF", lat: 42.9405, lon: -78.7322, elev: 728, name: "Buffalo Niagara" },
+    "KBUR": { iata: "BUR", lat: 34.2028, lon: -118.3581, elev: 778, name: "Hollywood Burbank" },
+    "KBWI": { iata: "BWI", lat: 39.1754, lon: -76.6683, elev: 146, name: "Baltimore/Washington" },
+    "KBZN": { iata: "BZN", lat: 45.7789, lon: -111.1537, elev: 4473, name: "Bozeman Yellowstone" },
+    "KCAK": { iata: "CAK", lat: 40.9161, lon: -81.4422, elev: 1228, name: "Akron Canton Regional" },
+    "KCBM": { iata: "CBM", lat: 33.6438, lon: -88.4438, elev: 219, name: "Columbus AFB" },
+    "KCCR": { iata: "CCR", lat: 37.9897, lon: -122.057, elev: 26, name: "Buchanan Field" },
+    "KCDW": { iata: "CDW", lat: 40.8752, lon: -74.2814, elev: 173, name: "Essex County" },
+    "KCHS": { iata: "CHS", lat: 32.8962, lon: -80.0382, elev: 46, name: "Charleston International" },
+    "KCLE": { iata: "CLE", lat: 41.4117, lon: -81.8498, elev: 791, name: "Cleveland Hopkins" },
+    "KCLT": { iata: "CLT", lat: 35.214, lon: -80.9431, elev: 748, name: "Charlotte Douglas" },
+    "KCMA": { iata: "CMA", lat: 34.2137, lon: -119.094, elev: 77, name: "Camarillo" },
+    "KCMH": { iata: "CMH", lat: 39.998, lon: -82.8919, elev: 815, name: "Columbus Intl" },
+    "KCNO": { iata: "CNO", lat: 33.9747, lon: -117.637, elev: 650, name: "Chino" },
+    "KCOS": { iata: "COS", lat: 38.8058, lon: -104.701, elev: 6187, name: "Colorado Springs Municipal" },
+    "KCRE": { iata: "CRE", lat: 33.8117, lon: -78.7239, elev: 32, name: "Grand Strand" },
+    "KCRP": { iata: "CRP", lat: 27.7704, lon: -97.5012, elev: 44, name: "Corpus Christi" },
+    "KCRQ": { iata: "CLD", lat: 33.1283, lon: -117.28, elev: 331, name: "McClellan-Palomar" },
+    "KCVG": { iata: "CVG", lat: 39.0488, lon: -84.6678, elev: 896, name: "Cincinnati Northern Kentucky" },
+    "KDAL": { iata: "DAL", lat: 32.8448, lon: -96.8477, elev: 487, name: "Dallas Love Field" },
+    "KDCA": { iata: "DCA", lat: 38.8521, lon: -77.0377, elev: 15, name: "Reagan National" },
+    "KDEN": { iata: "DEN", lat: 39.86, lon: -104.6738, elev: 5431, name: "Denver International" },
+    "KEAT": { iata: "EAT", lat: 47.3989, lon: -120.207, elev: 1249, name: "Pangborn Memorial" },
+    "KECP": { iata: "ECP", lat: 30.3571, lon: -85.7954, elev: 69, name: "Northwest Florida Beaches" },
+    "KEFD": { iata: "EFD", lat: 29.6073, lon: -95.1588, elev: 32, name: "Ellington" },
+    "KEGE": { iata: "EGE", lat: 39.6426, lon: -106.918, elev: 6548, name: "Eagle County Regional" },
+    "KEKA": { iata: "EKA", lat: 40.8034, lon: -124.113, elev: 7, name: "Murray Field" },
+    "KEWR": { iata: "EWR", lat: 40.6894, lon: -74.1705, elev: 18, name: "Newark Liberty" },
+    "KEYW": { iata: "EYW", lat: 24.5561, lon: -81.7596, elev: 3, name: "Key West International" },
+    "KFAT": { iata: "FAT", lat: 36.7758, lon: -119.718, elev: 336, name: "Fresno Yosemite" },
+    "KFAY": { iata: "FAY", lat: 34.9912, lon: -78.8803, elev: 189, name: "Fayetteville Regional" },
+    "KFDK": { iata: "FDK", lat: 39.4176, lon: -77.3743, elev: 303, name: "Frederick Municipal" },
+    "KFFA": { iata: "FFA", lat: 36.0182, lon: -75.6713, elev: 13, name: "First Flight" },
+    "KFKL": { iata: "FKL", lat: 41.3779, lon: -79.8604, elev: 1540, name: "Venango Regional" },
+    "KFLL": { iata: "FLL", lat: 26.0726, lon: -80.1527, elev: 9, name: "Ft Lauderdale Hollywood" },
+    "KFNL": { iata: "FNL", lat: 40.4497, lon: -105.0113, elev: 5016, name: "Northern Colorado Regional" },
+    "KFRG": { iata: "FRG", lat: 40.7286, lon: -73.4143, elev: 82, name: "Republic" },
+    "KFTW": { iata: "FTW", lat: 32.8199, lon: -97.3608, elev: 710, name: "Fort Worth Meacham" },
+    "KFTY": { iata: "FTY", lat: 33.7791, lon: -84.5214, elev: 841, name: "Fulton County (Atl)" },
+    "KFXE": { iata: "FXE", lat: 26.1973, lon: -80.1707, elev: 13, name: "Ft Lauderdale Executive" },
+    "KGAI": { iata: "GAI", lat: 39.1683, lon: -77.166, elev: 539, name: "Montgomery County Airpark" },
+    "KGEG": { iata: "GEG", lat: 47.6199, lon: -117.534, elev: 2376, name: "Spokane International" },
+    "KGJT": { iata: "GJT", lat: 39.1267, lon: -108.5294, elev: 4858, name: "Grand Junction Regional" },
+    "KGRR": { iata: "GRR", lat: 42.8808, lon: -85.5228, elev: 794, name: "Gerald R. Ford" },
+    "KGSO": { iata: "GSO", lat: 36.0994, lon: -79.9373, elev: 925, name: "Piedmont Triad" },
+    "KGSP": { iata: "GSP", lat: 34.8957, lon: -82.2189, elev: 964, name: "Greenville-Spartanburg" },
+    "KGTF": { iata: "GTF", lat: 47.482, lon: -111.371, elev: 3680, name: "Great Falls" },
+    "KGTU": { iata: "GTU", lat: 30.6775, lon: -97.6785, elev: 790, name: "Georgetown Executive" },
+    "KGYI": { iata: "PNX", lat: 33.7141, lon: -96.6737, elev: 749, name: "North Texas Regional" },
+    "KGYY": { iata: "GYY", lat: 41.6171, lon: -87.4132, elev: 591, name: "Gary/Chicago" },
+    "KHEF": { iata: "MNZ", lat: 38.7214, lon: -77.5154, elev: 192, name: "Manassas Regional" },
+    "KHHR": { iata: "HHR", lat: 33.9228, lon: -118.335, elev: 66, name: "Hawthorne Municipal" },
+    "KHKY": { iata: "HKY", lat: 35.7411, lon: -81.3895, elev: 1190, name: "Hickory Regional" },
+    "KHOU": { iata: "HOU", lat: 29.6453, lon: -95.2768, elev: 46, name: "Houston Hobby" },
+    "KHPN": { iata: "HPN", lat: 41.067, lon: -73.7076, elev: 439, name: "Westchester County" },
+    "KHQM": { iata: "HQM", lat: 46.9712, lon: -123.937, elev: 18, name: "Bowerman" },
+    "KHWD": { iata: "HWD", lat: 37.6592, lon: -122.122, elev: 52, name: "Hayward Executive" },
+    "KHYA": { iata: "HYA", lat: 41.6693, lon: -70.2804, elev: 54, name: "Cape Cod Gateway" },
+    "KIAD": { iata: "IAD", lat: 38.9445, lon: -77.4558, elev: 312, name: "Washington Dulles" },
+    "KIAH": { iata: "IAH", lat: 29.9844, lon: -95.3414, elev: 97, name: "Bush Intercontinental" },
+    "KIDA": { iata: "IDA", lat: 43.5146, lon: -112.071, elev: 4744, name: "Idaho Falls Regional" },
+    "KILG": { iata: "ILG", lat: 39.6787, lon: -75.6065, elev: 80, name: "Wilmington Airport (DE)" },
+    "KILM": { iata: "ILM", lat: 34.2723, lon: -77.9051, elev: 32, name: "Wilmington International (NC)" },
+    "KIND": { iata: "IND", lat: 39.7173, lon: -86.2944, elev: 797, name: "Indianapolis International" },
+    "KISO": { iata: "ISO", lat: 35.3314, lon: -77.6088, elev: 93, name: "Kinston Regional Jetport" },
+    "KISP": { iata: "ISP", lat: 40.7963, lon: -73.1017, elev: 99, name: "Long Island MacArthur" },
+    "KIXD": { iata: "JCI", lat: 38.8309, lon: -94.8903, elev: 1087, name: "New Century AirCenter" },
+    "KJAC": { iata: "JAC", lat: 43.6073, lon: -110.738, elev: 6451, name: "Jackson Hole" },
+    "KJFK": { iata: "JFK", lat: 40.6394, lon: -73.7793, elev: 13, name: "JFK International" },
+    "KLAS": { iata: "LAS", lat: 36.0834, lon: -115.1518, elev: 2181, name: "Harry Reid International" },
+    "KLAX": { iata: "LAX", lat: 33.9425, lon: -118.408, elev: 125, name: "Los Angeles International" },
+    "KLDJ": { iata: "LDJ", lat: 40.6174, lon: -74.2446, elev: 23, name: "Linden" },
+    "KLEX": { iata: "LEX", lat: 38.0351, lon: -84.6067, elev: 979, name: "Blue Grass" },
+    "KLGA": { iata: "LGA", lat: 40.7772, lon: -73.8726, elev: 21, name: "LaGuardia" },
+    "KMAF": { iata: "MAF", lat: 31.9425, lon: -102.202, elev: 2871, name: "Midland International" },
+    "KMCC": { iata: "MCC", lat: 38.6676, lon: -121.401, elev: 77, name: "McClellan Airfield" },
+    "KMCI": { iata: "MCI", lat: 39.3017, lon: -94.7139, elev: 1026, name: "Kansas City International" },
+    "KMCO": { iata: "MCO", lat: 28.4294, lon: -81.309, elev: 96, name: "Orlando International" },
+    "KMDW": { iata: "MDW", lat: 41.786, lon: -87.7524, elev: 620, name: "Chicago Midway" },
+    "KMEM": { iata: "MEM", lat: 35.0438, lon: -89.9763, elev: 341, name: "Memphis International" },
+    "KMHR": { iata: "MHR", lat: 38.5547, lon: -121.298, elev: 98, name: "Sacramento Mather" },
+    "KMHT": { iata: "MHT", lat: 42.9326, lon: -71.4357, elev: 266, name: "Manchester-Boston Regional" },
+    "KMIA": { iata: "MIA", lat: 25.796, lon: -80.2898, elev: 8, name: "Miami International" },
+    "KMKE": { iata: "MKE", lat: 42.9472, lon: -87.8966, elev: 723, name: "General Mitchell International" },
+    "KMMU": { iata: "MMU", lat: 40.7991, lon: -74.4149, elev: 187, name: "Morristown Municipal" },
+    "KMOB": { iata: "MOB", lat: 30.6912, lon: -88.2428, elev: 219, name: "Mobile Regional" },
+    "KMRB": { iata: "MRB", lat: 39.4019, lon: -77.9846, elev: 565, name: "Eastern WV Regional" },
+    "KMRY": { iata: "MRY", lat: 36.5868, lon: -121.8442, elev: 257, name: "Monterey Regional" },
+    "KMSO": { iata: "MSO", lat: 46.9158, lon: -114.0911, elev: 3206, name: "Missoula Montana" },
+    "KMSP": { iata: "MSP", lat: 44.8801, lon: -93.2217, elev: 841, name: "MSP International" },
+    "KMSY": { iata: "MSY", lat: 29.9934, lon: -90.2647, elev: 4, name: "New Orleans (Armstrong)" },
+    "KMTJ": { iata: "MTJ", lat: 38.5098, lon: -107.894, elev: 5759, name: "Montrose Regional" },
+    "KMVY": { iata: "MVY", lat: 41.3931, lon: -70.6143, elev: 67, name: "Martha's Vineyard" },
+    "KMYR": { iata: "MYR", lat: 33.6797, lon: -78.9283, elev: 25, name: "Myrtle Beach International" },
+    "KOAK": { iata: "OAK", lat: 37.7201, lon: -122.2212, elev: 9, name: "Oakland International" },
+    "KOCF": { iata: "OCF", lat: 29.1726, lon: -82.2242, elev: 90, name: "Ocala International" },
+    "KOJC": { iata: "OJC", lat: 38.8476, lon: -94.7376, elev: 1096, name: "Johnson County Executive" },
+    "KOKC": { iata: "OKC", lat: 35.3934, lon: -97.5982, elev: 1295, name: "OKC Will Rogers World" },
+    "KOLM": { iata: "OLM", lat: 46.9694, lon: -122.903, elev: 209, name: "Olympia Regional" },
+    "KOMA": { iata: "OMA", lat: 41.3032, lon: -95.8941, elev: 984, name: "Eppley Airfield" },
+    "KORD": { iata: "ORD", lat: 41.9786, lon: -87.9048, elev: 680, name: "Chicago O'Hare" },
+    "KORF": { iata: "ORF", lat: 36.8953, lon: -76.201, elev: 26, name: "Norfolk International" },
+    "KORL": { iata: "ORL", lat: 28.5455, lon: -81.3329, elev: 113, name: "Orlando Executive" },
+    "KOWD": { iata: "OWD", lat: 42.1905, lon: -71.1729, elev: 49, name: "Norwood Memorial" },
+    "KOXR": { iata: "OXR", lat: 34.2008, lon: -119.207, elev: 45, name: "Oxnard" },
+    "KPAO": { iata: "PAO", lat: 37.4611, lon: -122.115, elev: 4, name: "Palo Alto" },
+    "KPBI": { iata: "PBI", lat: 26.6832, lon: -80.0956, elev: 19, name: "Palm Beach International" },
+    "KPDK": { iata: "PDK", lat: 33.8763, lon: -84.3021, elev: 1003, name: "DeKalb Peachtree" },
+    "KPDX": { iata: "PDX", lat: 45.5887, lon: -122.598, elev: 31, name: "Portland International (OR)" },
+    "KPHF": { iata: "PHF", lat: 37.1319, lon: -76.493, elev: 42, name: "Newport News Williamsburg" },
+    "KPHL": { iata: "PHL", lat: 39.8719, lon: -75.2411, elev: 36, name: "Philadelphia International" },
+    "KPHX": { iata: "PHX", lat: 33.4353, lon: -112.0059, elev: 1135, name: "Phoenix Sky Harbor" },
+    "KPIE": { iata: "PIE", lat: 27.9102, lon: -82.6874, elev: 11, name: "St. Petersburg-Clearwater" },
+    "KPNS": { iata: "PNS", lat: 30.4727, lon: -87.1866, elev: 121, name: "Pensacola International" },
+    "KPSC": { iata: "PSC", lat: 46.2647, lon: -119.119, elev: 410, name: "Tri Cities" },
+    "KPSM": { iata: "PSM", lat: 43.0779, lon: -70.8233, elev: 100, name: "Portsmouth Pease" },
+    "KPSP": { iata: "PSP", lat: 33.8297, lon: -116.507, elev: 477, name: "Palm Springs International" },
+    "KPVD": { iata: "PVD", lat: 41.725, lon: -71.4257, elev: 55, name: "T. F. Green International" },
+    "KPVG": { iata: "PVG", lat: 36.7804, lon: -76.4488, elev: 28, name: "Hampton Roads Executive" },
+    "KPWK": { iata: "PWK", lat: 42.1142, lon: -87.9015, elev: 647, name: "Chicago Executive" },
+    "KRDU": { iata: "RDU", lat: 35.8787, lon: -78.7873, elev: 435, name: "Raleigh-Durham International" },
+    "KRIL": { iata: "RIL", lat: 39.5263, lon: -107.727, elev: 5548, name: "Garfield County Regional" },
+    "KRNO": { iata: "RNO", lat: 39.4991, lon: -119.768, elev: 4415, name: "Reno Tahoe International" },
+    "KROC": { iata: "ROC", lat: 43.1189, lon: -77.6724, elev: 559, name: "Rochester International" },
+    "KSAN": { iata: "SAN", lat: 32.7336, lon: -117.19, elev: 17, name: "San Diego International" },
+    "KSAV": { iata: "SAV", lat: 32.1266, lon: -81.2, elev: 50, name: "Savannah Hilton Head" },
+    "KSBA": { iata: "SBA", lat: 34.4262, lon: -119.84, elev: 13, name: "Santa Barbara Municipal" },
+    "KSBN": { iata: "SBN", lat: 41.7083, lon: -86.3169, elev: 799, name: "South Bend International" },
+    "KSCH": { iata: "SCH", lat: 42.8525, lon: -73.9289, elev: 378, name: "Schenectady County" },
+    "KSCK": { iata: "SCK", lat: 37.8933, lon: -121.2381, elev: 33, name: "Stockton Metropolitan" },
+    "KSDF": { iata: "SDF", lat: 38.1706, lon: -85.7351, elev: 501, name: "Louisville Muhammad Ali" },
+    "KSDL": { iata: "SDL", lat: 33.6229, lon: -111.911, elev: 1510, name: "Scottsdale" },
+    "KSEA": { iata: "SEA", lat: 47.4479, lon: -122.3103, elev: 433, name: "Seattle-Tacoma" },
+    "KSFB": { iata: "SFB", lat: 28.7743, lon: -81.2346, elev: 55, name: "Orlando Sanford" },
+    "KSFO": { iata: "SFO", lat: 37.6198, lon: -122.3748, elev: 13, name: "San Francisco International" },
+    "KSGJ": { iata: "UST", lat: 29.9592, lon: -81.3398, elev: 10, name: "Northeast Florida Regional" },
+    "KSGU": { iata: "SGU", lat: 37.0364, lon: -113.5103, elev: 2941, name: "St George Regional" },
+    "KSJC": { iata: "SJC", lat: 37.3625, lon: -121.9292, elev: 62, name: "San Jose International" },
+    "KSLC": { iata: "SLC", lat: 40.7889, lon: -111.9799, elev: 4227, name: "Salt Lake City International" },
+    "KSMF": { iata: "SMF", lat: 38.6954, lon: -121.591, elev: 27, name: "Sacramento International" },
+    "KSMO": { iata: "SMO", lat: 34.0158, lon: -118.451, elev: 170, name: "Santa Monica Municipal" },
+    "KSNA": { iata: "SNA", lat: 33.6751, lon: -117.8693, elev: 56, name: "John Wayne Orange County" },
+    "KSTL": { iata: "STL", lat: 38.7487, lon: -90.37, elev: 618, name: "St. Louis Lambert" },
+    "KSTS": { iata: "STS", lat: 38.509, lon: -122.813, elev: 128, name: "Sonoma County" },
+    "KSYR": { iata: "SYR", lat: 43.1112, lon: -76.1063, elev: 421, name: "Syracuse Hancock" },
+    "KTEB": { iata: "TEB", lat: 40.8501, lon: -74.0608, elev: 9, name: "Teterboro" },
+    "KTEX": { iata: "TEX", lat: 37.9538, lon: -107.908, elev: 9070, name: "Telluride Regional" },
+    "KTIW": { iata: "TIW", lat: 47.2674, lon: -122.5773, elev: 294, name: "Tacoma Narrows" },
+    "KTTD": { iata: "TTD", lat: 45.5494, lon: -122.401, elev: 39, name: "Portland Troutdale" },
+    "KTUL": { iata: "TUL", lat: 36.1971, lon: -95.8862, elev: 677, name: "Tulsa International" },
+    "KTUS": { iata: "TUS", lat: 32.115, lon: -110.9381, elev: 2643, name: "Tucson International" },
+    "KTYS": { iata: "TYS", lat: 35.811, lon: -83.994, elev: 981, name: "McGhee Tyson" },
+    "KVNY": { iata: "VNY", lat: 34.2098, lon: -118.49, elev: 802, name: "Van Nuys" },
+    "KYKM": { iata: "YKM", lat: 46.5682, lon: -120.544, elev: 1099, name: "Yakima Air Terminal" },
+    "MMGL": { iata: "GDL", lat: 20.5233, lon: -103.3101, elev: 5016, name: "Guadalajara International" },
+    "MMMD": { iata: "MID", lat: 20.9305, lon: -89.6455, elev: 38, name: "Merida International" },
+    "MMMX": { iata: "MEX", lat: 19.4358, lon: -99.0703, elev: 7316, name: "Mexico City Benito Juarez" },
+    "MMPR": { iata: "PVR", lat: 20.6799, lon: -105.2544, elev: 23, name: "Puerto Vallarta International" },
+    "MMSD": { iata: "SJD", lat: 23.1519, lon: -109.7207, elev: 374, name: "Los Cabos International" },
+    "MMTJ": { iata: "TIJ", lat: 32.541, lon: -116.97, elev: 489, name: "Tijuana Rodriguez" },
+    "MMTO": { iata: "TLC", lat: 19.3369, lon: -99.5658, elev: 8466, name: "Toluca International" },
+    "MMUN": { iata: "CUN", lat: 21.0408, lon: -86.8735, elev: 22, name: "Cancun International" },
+    "MROC": { iata: "SJO", lat: 9.9939, lon: -84.2088, elev: 3021, name: "San Jose Costa Rica" },
+    "MUVR": { iata: "VRA", lat: 23.0344, lon: -81.4353, elev: 210, name: "Varadero" },
+    "MWCR": { iata: "GCM", lat: 19.2928, lon: -81.3577, elev: 8, name: "Owen Roberts (Cayman)" },
+    "MYAB": { iata: "MAY", lat: 24.2877, lon: -77.6846, elev: 19, name: "Clarence Bain (Andros)" },
+    "MYAK": { iata: "TZN", lat: 24.1587, lon: -77.5898, elev: 15, name: "Congo Town (Andros)" },
+    "MYAM": { iata: "MHH", lat: 26.5107, lon: -77.0843, elev: 6, name: "Marsh Harbour (Abaco)" },
+    "MYBS": { iata: "BIM", lat: 25.6999, lon: -79.2647, elev: 10, name: "South Bimini" },
+    "MYEH": { iata: "ELH", lat: 25.4758, lon: -76.6808, elev: 13, name: "North Eleuthera" },
+    "MYGF": { iata: "FPO", lat: 26.558, lon: -78.6956, elev: 7, name: "Grand Bahama (Freeport)" },
+    "MYNN": { iata: "NAS", lat: 25.039, lon: -77.4662, elev: 16, name: "Lynden Pindling (Nassau)" },
+    "TAPA": { iata: "ANU", lat: 17.1367, lon: -61.7927, elev: 62, name: "V. C. Bird (Antigua)" },
+    "TFFG": { iata: "SFG", lat: 18.1001, lon: -63.0474, elev: 7, name: "Grand Case (St Martin)" },
+    "TGPY": { iata: "GND", lat: 12.004, lon: -61.7853, elev: 41, name: "Maurice Bishop (Grenada)" },
+    "TIST": { iata: "STT", lat: 18.3371, lon: -64.9773, elev: 23, name: "Cyril E. King (St Thomas)" },
+    "TJSJ": { iata: "SJU", lat: 18.4394, lon: -66.0018, elev: 9, name: "San Juan (Munoz Marin)" },
+    "TKPK": { iata: "SKB", lat: 17.3108, lon: -62.7191, elev: 170, name: "St Kitts (Bradshaw)" },
+    "TLPC": { iata: "SLU", lat: 14.0202, lon: -60.9929, elev: 22, name: "St Lucia (G F L Charles)" },
+    "TLPL": { iata: "UVF", lat: 13.7332, lon: -60.9526, elev: 14, name: "St Lucia (Hewanorra)" },
+    "TUPJ": { iata: "EIS", lat: 18.4455, lon: -64.5417, elev: 15, name: "Tortola (BVI)" },
+    "TVSB": { iata: "BQU", lat: 12.9884, lon: -61.262, elev: 15, name: "Bequia" },
+    "TXKF": { iata: "BDA", lat: 32.3638, lon: -64.6782, elev: 12, name: "Bermuda" },
+    // ── Activity-data top-up (gaps found from 9-mo flight log mining) ──
+    "KAFW": { iata: "AFW", lat: 32.9904, lon: -97.3195, elev:  722, name: "Fort Worth Alliance" },
+    "KAGS": { iata: "AGS", lat: 33.3699, lon: -81.9645, elev:  144, name: "Augusta Regional" },
+    "KASH": { iata: "ASH", lat: 42.7817, lon: -71.5148, elev:  199, name: "Nashua Boire Field" },
+    "KCID": { iata: "CID", lat: 41.8847, lon: -91.7108, elev:  869, name: "Eastern Iowa" },
+    "KCRG": { iata: "CRG", lat: 30.3363, lon: -81.5144, elev:   41, name: "Jacksonville Executive Craig" },
+    "KCXO": { iata: "CXO", lat: 30.3518, lon: -95.4145, elev:  245, name: "Conroe-North Houston Regional" },
+    "KCXY": { iata: "HAR", lat: 40.2171, lon: -76.8515, elev:  347, name: "Harrisburg Capital City" },
+    "KDSM": { iata: "DSM", lat: 41.534, lon: -93.6567, elev:  958, name: "Des Moines International" },
+    "KEWB": { iata: "EWB", lat: 41.6761, lon: -70.9569, elev:   80, name: "New Bedford Regional" },
+    "KFAR": { iata: "FAR", lat: 46.9207, lon: -96.8158, elev:  902, name: "Fargo Hector" },
+    "KFLG": { iata: "FLG", lat: 35.1398, lon: -111.6698, elev: 7014, name: "Flagstaff Pulliam" },
+    "KGED": { iata: "GED", lat: 38.6892, lon: -75.3589, elev:   53, name: "Delaware Coastal" },
+    "KGFK": { iata: "GFK", lat: 47.9493, lon: -97.1761, elev:  845, name: "Grand Forks International" },
+    "KGON": { iata: "GON", lat: 41.3301, lon: -72.0451, elev:    9, name: "Groton New London" },
+    "KGPI": { iata: "FCA", lat: 48.3105, lon: -114.256, elev: 2977, name: "Glacier Park (Kalispell)" },
+    "KGUC": { iata: "GUC", lat: 38.5347, lon: -106.9346, elev: 7680, name: "Gunnison Crested Butte" },
+    "KICT": { iata: "ICT", lat: 37.6503, lon: -97.4286, elev: 1333, name: "Wichita Eisenhower" },
+    "KLEB": { iata: "LEB", lat: 43.6261, lon: -72.3042, elev:  603, name: "Lebanon Municipal" },
+    "KMHK": { iata: "MHK", lat: 39.141, lon: -96.6708, elev: 1057, name: "Manhattan Regional (KS)" },
+    "KMOB": { iata: "MOB", lat: 30.6912, lon: -88.2428, elev:  219, name: "Mobile Regional" },
+    "KMQS": { iata: "CTH", lat: 39.979, lon: -75.8655, elev:  660, name: "Chester County (PA)" },
+    "KMSN": { iata: "MSN", lat: 43.1399, lon: -89.3375, elev:  887, name: "Madison Truax" },
+    "KMTH": { iata: "MTH", lat: 24.726, lon: -81.0514, elev:    5, name: "Marathon Key" },
+    "KOPF": { iata: "OPF", lat: 25.907, lon: -80.2784, elev:    8, name: "Opa-Locka Executive" },
+    "KOSU": { iata: "OSU", lat: 40.0798, lon: -83.073, elev:  905, name: "Ohio State (Don Scott)" },
+    "KRSW": { iata: "RSW", lat: 26.5347, lon: -81.7528, elev:   30, name: "Southwest Florida International (Ft Myers)" },
+    "KSAF": { iata: "SAF", lat: 35.6171, lon: -106.089, elev: 6348, name: "Santa Fe Municipal" },
+    "KSAT": { iata: "SAT", lat: 29.5337, lon: -98.4698, elev:  809, name: "San Antonio International" },
+    "KSDM": { iata: "SDM", lat: 32.5726, lon: -116.98, elev:  526, name: "Brown Field Municipal" },
+    "KSEZ": { iata: "SDX", lat: 34.8486, lon: -111.788, elev: 4830, name: "Sedona" },
+    "KSGS": { iata: "SGS", lat: 44.8571, lon: -93.0329, elev:  821, name: "South St Paul Municipal" },
+    "KSRQ": { iata: "SRQ", lat: 27.3946, lon: -82.5544, elev:   30, name: "Sarasota Bradenton" },
+    "KSUA": { iata: "SUA", lat: 27.1817, lon: -80.2211, elev:   16, name: "Witham Field (Stuart)" },
+    "KTPA": { iata: "TPA", lat: 27.9755, lon: -82.5332, elev:   26, name: "Tampa International" },
+    "KTRM": { iata: "TRM", lat: 33.6267, lon: -116.16, elev: -115, name: "Jacqueline Cochran (Thermal/Coachella)" },
+    "KTTA": { iata: "TTA", lat: 35.5837, lon: -79.1008, elev:  246, name: "Raleigh Executive Jetport (JE base)" },
+    "KVRB": { iata: "VRB", lat: 27.6556, lon: -80.4179, elev:   24, name: "Vero Beach Regional" },
+    "MMSL": { iata: "CSL", lat: 22.9491, lon: -109.9395, elev:  459, name: "Cabo San Lucas International" },
+  };
+
+  // Helper: resolve a user-typed "ASE" or "KASE" to the AIRPORT_DB record.
+  function lookupAirport(input) {
+    if (!input) return null;
+    const t = input.trim().toUpperCase();
+    if (AIRPORT_DB[t]) return { icao: t, ...AIRPORT_DB[t] };
+    // Try with K-prefix for US 3-letter codes
+    if (AIRPORT_DB["K" + t]) return { icao: "K" + t, ...AIRPORT_DB["K" + t] };
+    // Try IATA match
+    for (const [icao, rec] of Object.entries(AIRPORT_DB)) {
+      if (rec.iata === t) return { icao, ...rec };
+    }
+    return null;
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // CONSTANTS
+  // ═════════════════════════════════════════════════════════════
+  const MZFW            = 24400;
+  const CREW_ALLOW      = 700;          // BOW = BEW + 700
+  const CRUISE_KTAS     = 510;          // Citation X M.88 ≈ 510 KTAS
+  const LBS_PER_GAL     = 6.7;          // Jet-A
+  const RESERVE_MIN     = 45;           // GOM 2.4.3.b — 45-min IFR final reserve
+  const TAXI_FUEL_LBS   = 250;          // start, taxi, runup
+  const CLIMB_FUEL_LBS  = 800;          // climb above cruise burn baseline
+  const ALTERNATE_NM    = 100;          // default alternate distance (extra fuel)
+  const BFL_WT_EXP      = 1.5;          // (W/MTOW)^1.5 jet BFL scaling
+  const CONTINGENCY_PCT = 0.05;         // 5% contingency for nonstop verdict
+
+  // ═════════════════════════════════════════════════════════════
+  // SHARED HELPERS
+  // ═════════════════════════════════════════════════════════════
   function fmt(lbs) {
-    return Math.abs(lbs).toLocaleString('en-US') + ' lbs';
+    return Math.abs(Math.round(lbs)).toLocaleString('en-US') + ' lbs';
+  }
+  function fmtNum(n, dp = 0) {
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  }
+  function fmtFt(ft)  { return Math.round(ft).toLocaleString('en-US') + ' ft'; }
+  function fmtGal(g)  { return Math.round(g).toLocaleString('en-US') + ' gal'; }
+  function fF2C(f)    { return (f - 32) * 5/9; }
+  function fC2F(c)    { return c * 9/5 + 32; }
+  function isaAtElev(elev_ft) { return 15 - 1.98 * (elev_ft / 1000); }
+  function densityAlt(elev_ft, oat_c) {
+    return elev_ft + 120 * (oat_c - isaAtElev(elev_ft));
   }
 
   function getStatus(remaining) {
@@ -439,7 +1306,6 @@
     el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
     el.classList.add('bg-' + status.key);
 
-    // Optional line-item breakdown (used by Calc 2)
     const breakdownHTML = breakdown
       ? breakdown.map(r => `
           <div class="result-row">
@@ -467,18 +1333,90 @@
     `;
   }
 
-  // ── Calculator 1 — Generic Conservative ──────────────────────
-  function calcGeneric() {
-    const used = Math.max(0, parseFloat(document.getElementById('c1-full').value) || 0);
+  // ═════════════════════════════════════════════════════════════
+  // TAB SWITCHING
+  // ═════════════════════════════════════════════════════════════
+  document.querySelectorAll('nav.tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
 
-    const BOW        = 22015 + CREW_ALLOW;   // 22,715
-    const maxPayload = MZFW - BOW;           // 1,685
-    const remaining  = maxPayload - used;
-
-    renderResult('c1-result', maxPayload, used, remaining);
+  // ═════════════════════════════════════════════════════════════
+  // DROPDOWN POPULATION
+  // ═════════════════════════════════════════════════════════════
+  function populateTailDropdowns() {
+    const tails = Object.keys(FLEET_BEW).sort();
+    const targets = ['c2-tail', 'ns-tail', 'rw-tail', 'gt-tail'];
+    targets.forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      tails.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        const bew = FLEET_BEW[t];
+        opt.textContent = bew === null ? `${t}  (BEW Unavailable)` : t;
+        sel.appendChild(opt);
+      });
+    });
   }
 
-  // ── Calculator 2 — Tail Specific ─────────────────────────────
+  // Public-facing build: burn-rate selector is now anonymous scenario
+  // options hard-coded into the dropdowns. No pilot name/data is shipped
+  // in the bundle. populatePicDropdown is intentionally a no-op — kept
+  // here so the init call doesn't error.
+  function populatePicDropdown() { /* no-op (scenarios are inline <option>s) */ }
+  // Stub — referenced in init from when the Quote-Cost tab existed.
+  function calcQuote() { /* no-op: Quote-Cost tab removed */ }
+
+  // ═════════════════════════════════════════════════════════════
+  // ACTIVITY DATA — 9-month historical mine from JE Citation X log
+  // ═════════════════════════════════════════════════════════════
+  const ACTIVITY_DATA = {
+    total_legs: 5066, total_block_hrs: 11132.8, distinct_trips: 2408,
+    period: "Sep 2025 – Apr 2026 (~9 months)",
+    top_airports: [
+      ["TEB",400],["OPF",232],["PBI",217],["BCT",216],["HPN",186],["LAS",177],
+      ["SDL",177],["BED",173],["APF",171],["EGE",164],["ASE",158],["VNY",150],
+      ["IAD",139],["AUS",137],["BZN",125],["SLC",124],["TTA",117],["MYNN",116],
+      ["HOU",112],["DAL",105],["PSP",100],["JAC",99],["APA",98],["RIL",96],
+      ["RDU",94],["BNA",91],["PHL",86],["MDW",86],["PWK",83],["SNA",82],
+      ["RSW",80],["SFO",76],["FLL",76],["SUA",69],["SRQ",67],["TUS",64],
+      ["MMSL",59],["BOS",59],["SAN",58],["SJC",57],["SAT",56],["TPA",55],
+      ["VRB",54],["BFI",53],["MMSD",53],["FRG",51],["FXE",51],["CHS",50],
+      ["TRM",50],["BJC",50],
+    ],
+    top_routes: [
+      ["TEB","BED",9],["ASE","BCT",9],["ASE","TEB",9],["ASE","OPF",8],
+      ["BED","TEB",7],["TEB","MYNN",7],["TEB","PBI",7],["VNY","BZN",7],
+      ["TEB","VNY",6],["TEB","HPN",6],["OPF","HPN",6],["VNY","BNA",6],
+      ["MYNN","TEB",6],["OPF","APF",6],["TEB","BCT",6],["BCT","PBI",6],
+      ["PBI","TEB",6],["HPN","TEB",6],["APF","BED",6],["BNA","VNY",6],
+      ["RGK","STP",5],["SDL","LAS",5],["PBI","IAD",5],["BCT","BED",5],
+      ["MDW","EGE",5],["HOU","AUS",5],["PHL","VRB",5],["BCT","VRB",5],
+      ["VRB","PHL",5],["JAC","TEB",5],["OPF","SRQ",5],["TEB","ASE",5],
+      ["TEB","OPF",5],["OPF","BCT",5],["EGE","TEB",5],["BCT","RIL",5],
+    ],
+    // pic_stats intentionally omitted — public-facing calculator
+    // doesn't surface per-pilot block-time data.
+  };
+
+  // ═════════════════════════════════════════════════════════════
+  // TAB 1: MAX PAYLOAD (preserved from original)
+  // ═════════════════════════════════════════════════════════════
+  function calcGeneric() {
+    const used = Math.max(0, parseFloat(document.getElementById('c1-full').value) || 0);
+    const BOW        = 22015 + CREW_ALLOW;
+    const maxPayload = MZFW - BOW;
+    const remaining  = maxPayload - used;
+    renderResult('c1-result', maxPayload, used, remaining);
+    document.getElementById('c1-result').insertAdjacentHTML('beforeend',
+      _shareButtons(_fmtCalc1, { tail: "N760XJ" }));
+  }
+
   function onTailChange() {
     const tailVal = document.getElementById('c2-tail').value;
     const refBox  = document.getElementById('c2-ref');
@@ -486,7 +1424,6 @@
     const inputs  = document.getElementById('c2-inputs');
     const result  = document.getElementById('c2-result');
 
-    // Reset
     refBox.style.display  = 'none';
     unavail.style.display = 'none';
     inputs.style.display  = 'none';
@@ -494,24 +1431,22 @@
 
     if (!tailVal) return;
 
-    const ac = FLEET.find(a => a.tail === tailVal);
-
-    if (!ac || ac.bew === null) {
+    const bew = FLEET_BEW[tailVal];
+    if (bew === null || bew === undefined) {
       unavail.style.display = 'block';
       return;
     }
 
-    const BOW        = ac.bew + CREW_ALLOW;
+    const BOW        = bew + CREW_ALLOW;
     const maxPayload = MZFW - BOW;
 
-    document.getElementById('c2-bew-val').textContent = fmt(ac.bew);
+    document.getElementById('c2-bew-val').textContent = fmt(bew);
     document.getElementById('c2-bow-val').textContent = fmt(BOW);
     document.getElementById('c2-mp-val').textContent  = fmt(maxPayload);
 
     refBox.style.display = 'grid';
     inputs.style.display = 'block';
 
-    // Reset inputs to defaults on tail switch
     document.getElementById('c2-paxwt').value = 0;
     document.getElementById('c2-bags').value  = 0;
   }
@@ -519,27 +1454,1089 @@
   function calcTail() {
     const tailVal = document.getElementById('c2-tail').value;
     if (!tailVal) return;
-
-    const ac = FLEET.find(a => a.tail === tailVal);
-    if (!ac || ac.bew === null) return;
+    const bew = FLEET_BEW[tailVal];
+    if (bew === null || bew === undefined) return;
 
     const paxWt = Math.max(0, parseFloat(document.getElementById('c2-paxwt').value) || 0);
     const bags  = Math.max(0, parseFloat(document.getElementById('c2-bags').value)  || 0);
 
-    const BOW        = ac.bew + CREW_ALLOW;
+    const BOW        = bew + CREW_ALLOW;
     const maxPayload = MZFW - BOW;
     const used       = paxWt + bags;
     const remaining  = maxPayload - used;
 
-    const breakdown = [
+    renderResult('c2-result', maxPayload, used, remaining, [
       { label: 'Total PAX Weight', value: paxWt },
       { label: 'Baggage Weight',   value: bags  },
-    ];
-    renderResult('c2-result', maxPayload, used, remaining, breakdown);
+    ]);
+    document.getElementById('c2-result').insertAdjacentHTML('beforeend',
+      _shareButtons(_fmtCalc2, { tail: tailVal }));
   }
 
-  // ── Init ──────────────────────────────────────────────────────
+  // ═════════════════════════════════════════════════════════════
+  // TAB 2: NONSTOP FEASIBILITY
+  // ═════════════════════════════════════════════════════════════
+  // Scenario picker → burn rate (gal/hr). Replaces the per-PIC lookup
+  // with anonymous values: "efficient" / "avg" / "conservative".
+  function pilotByName(scenarioKey) {
+    const s = (scenarioKey || "avg").toLowerCase();
+    const map = PILOT_FUEL_REPORT.scenarios || { efficient: 290, avg: 316, conservative: 335 };
+    if (map[s] === undefined) return null;
+    // Synthesize the same shape the old per-PIC lookup returned, so the
+    // existing call sites (`p.d30`) keep working without further edits.
+    return { name: s, d30: map[s], ytd: map[s] };
+  }
+
+  function calcNonstop() {
+    const tailVal  = document.getElementById('ns-tail').value;
+    const distNm   = Math.max(0, parseFloat(document.getElementById('ns-dist').value)  || 0);
+    const picName  = document.getElementById('ns-pic').value;
+    const paxWt    = Math.max(0, parseFloat(document.getElementById('ns-paxwt').value) || 0);
+    const bags     = Math.max(0, parseFloat(document.getElementById('ns-bags').value)  || 0);
+    const headwind = parseFloat(document.getElementById('ns-headwind')?.value) || 0;
+
+    const el = document.getElementById('ns-result');
+    if (!tailVal || distNm <= 0) {
+      el.classList.add('hidden');
+      return;
+    }
+
+    const bew  = FLEET_BEW[tailVal];
+    const perf = FLEET_PERF[tailVal];
+    if (!perf || bew === null || bew === undefined) {
+      el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
+      el.classList.add('bg-tight');
+      el.innerHTML = `<div class="result-row"><strong>BEW or performance data unavailable for ${tailVal}.</strong></div>
+        <div class="status-badge s-tight">⚠  Contact Dispatch</div>`;
+      return;
+    }
+
+    // --- Burn rate selection (scenario picker; no PIC names) ---
+    let burnGalHr = PILOT_FUEL_REPORT.fleet_avg.d30;
+    let burnSource = `fleet 30d avg (${burnGalHr.toFixed(1)} gal/hr)`;
+    if (picName) {
+      const p = pilotByName(picName);
+      if (p && p.d30 !== null) {
+        burnGalHr = p.d30;
+        burnSource = `${picName} scenario (${burnGalHr.toFixed(0)} gal/hr)`;
+      }
+    }
+
+    // --- Cruise altitude SFC correction ---
+    // Citation X is most efficient FL410-FL450; burn climbs significantly
+    // when forced low (MEL situations). Scale the burn rate by an
+    // altitude multiplier so the fuel build-up reflects the chosen FL.
+    const cruiseFL = parseInt(document.getElementById('ns-fl')?.value) || 450;
+    const sfcMult = _sfcMultForFL(cruiseFL);
+    const effectiveBurn = burnGalHr * sfcMult;
+    const sfcLabel = sfcMult === 1.0 ? "FL370 baseline" :
+                     `FL${cruiseFL} (${sfcMult > 1 ? '+' : ''}${((sfcMult - 1) * 100).toFixed(0)}% vs FL370 baseline)`;
+
+    // --- Trip fuel build-up (lbs) — wind-corrected ground speed ---
+    // headwind > 0 slows the airplane; headwind < 0 (tailwind) speeds it up.
+    // Floor at 200 KTAS so a freak input doesn't blow up the math.
+    const groundSpeed   = Math.max(CRUISE_KTAS - headwind, 200);
+    const tripHrs       = distNm / groundSpeed;
+    const tripBurnLbs   = tripHrs * effectiveBurn * LBS_PER_GAL;
+    const reserveLbs    = (RESERVE_MIN / 60) * effectiveBurn * LBS_PER_GAL;
+    const altHrs        = ALTERNATE_NM / CRUISE_KTAS;
+    const altBurnLbs    = altHrs * effectiveBurn * LBS_PER_GAL;
+    const totalFuelLbs  = tripBurnLbs + reserveLbs + altBurnLbs + TAXI_FUEL_LBS + CLIMB_FUEL_LBS;
+    const totalFuelGal  = totalFuelLbs / LBS_PER_GAL;
+
+    const fuelCapLbs    = perf.fuel_gal * LBS_PER_GAL;
+    const fuelPct       = totalFuelLbs / fuelCapLbs;
+
+    // --- Range check ---
+    const rangeMargin   = perf.range_nm - distNm;
+    const rangePctUsed  = distNm / perf.range_nm;
+
+    // --- Payload + planned weights ---
+    const BOW           = bew + CREW_ALLOW;
+    const totalPayload  = paxWt + bags;
+    const zfw           = BOW + totalPayload;
+    const tow           = zfw + totalFuelLbs;
+
+    const zfwOver       = zfw - MZFW;
+    const towOver       = tow - perf.mtow;
+    const lwApprox      = tow - tripBurnLbs;          // landing weight ≈ TOW − trip burn
+    const lwOver        = lwApprox - perf.mlw;
+
+    // --- Verdict ---
+    let key, label, headline, advisories = [];
+
+    if (rangeMargin < 0) {
+      key = 'over';
+      label = '⚠  INFEASIBLE — Distance Exceeds Aircraft Range';
+      headline = `Trip distance ${fmtNum(distNm)} nm exceeds ${tailVal} published range of ${fmtNum(perf.range_nm)} nm.`;
+    } else if (zfwOver > 0) {
+      key = 'over';
+      label = '⚠  OVER MZFW — Payload Reduction Required';
+      headline = `Zero-fuel weight ${fmt(zfw)} exceeds MZFW ${fmt(MZFW)} by ${fmt(zfwOver)}.`;
+    } else if (fuelPct >= 1.0) {
+      key = 'over';
+      label = '⚠  INFEASIBLE — Fuel Burn Exceeds Capacity';
+      headline = `Required fuel ${fmtGal(totalFuelGal)} exceeds ${tailVal} capacity of ${fmtGal(perf.fuel_gal)}.`;
+    } else if (towOver > 0) {
+      key = 'over';
+      label = '⚠  OVER MTOW — Reduce Payload or Fuel';
+      headline = `Takeoff weight ${fmt(tow)} exceeds MTOW ${fmt(perf.mtow)} by ${fmt(towOver)}.`;
+    } else if (fuelPct >= 0.95) {
+      key = 'tight';
+      label = '⚡  TIGHT — Fuel Load Above 95% of Capacity';
+      headline = `Fuel load is ${(fuelPct * 100).toFixed(1)}% of capacity. Verify with dispatch & FuelerLinx flight plan.`;
+    } else if (rangePctUsed >= 0.90) {
+      key = 'tight';
+      label = '⚡  TIGHT — Within 10% of Aircraft Range';
+      headline = `Trip distance is ${(rangePctUsed * 100).toFixed(1)}% of ${tailVal} published range. Strong headwinds may push out of margin.`;
+    } else if (fuelPct >= 0.85) {
+      key = 'ok';
+      label = '✓  OK — Monitor Winds';
+      headline = `Fuel load is ${(fuelPct * 100).toFixed(1)}% of capacity. Within standard planning window.`;
+    } else {
+      key = 'clear';
+      label = '✓  CLEAR — Comfortable Margin';
+      headline = `Fuel load is ${(fuelPct * 100).toFixed(1)}% of capacity, distance is ${(rangePctUsed * 100).toFixed(1)}% of range.`;
+    }
+
+    // Advisory: landing weight
+    if (lwOver > 0) {
+      advisories.push(`Estimated landing weight ${fmt(lwApprox)} exceeds MLW ${fmt(perf.mlw)} by ${fmt(lwOver)} — burn-down to ramp may be required en route.`);
+    }
+    // Advisory: short data templates (Template A/MIXED at long range)
+    if ((perf.template === 'A' || perf.template === 'MIXED') && rangePctUsed >= 0.80) {
+      advisories.push(`${tailVal} is on the shorter Template ${perf.template} range card (${fmtNum(perf.range_nm)} nm). Confirm route holds with current winds.`);
+    }
+
+    el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
+    el.classList.add('bg-' + key);
+
+    const advisoryHTML = advisories.length
+      ? `<div class="reasoning"><strong>Advisories</strong><ul>${advisories.map(a => `<li>${a}</li>`).join('')}</ul></div>`
+      : '';
+
+    el.innerHTML = `
+      <div class="result-row"><span><strong>Verdict</strong></span><strong>${headline}</strong></div>
+      <hr class="result-divider">
+
+      <div class="result-row"><span>Tail / MTOW / Range</span><span>${tailVal} · ${fmt(perf.mtow)} · ${fmtNum(perf.range_nm)} nm</span></div>
+      <div class="result-row"><span>Trip distance</span><span>${fmtNum(distNm)} nm  (${(rangePctUsed * 100).toFixed(1)}% of range)</span></div>
+      <div class="result-row"><span>Cruise altitude</span><span>FL${cruiseFL}</span></div>
+      <div class="result-row"><span>Cruise time @ ${headwind === 0 ? 'M.88 (zero wind)' : (headwind > 0 ? `${headwind} kt headwind` : `${Math.abs(headwind)} kt tailwind`)}</span><span>${tripHrs.toFixed(2)} hr (${groundSpeed} kt ground speed)</span></div>
+      <div class="result-row"><span>Burn-rate basis</span><span>${burnSource}</span></div>
+      <div class="result-row"><span>Effective burn @ FL${cruiseFL}</span><span>${effectiveBurn.toFixed(0)} gal/hr  ·  ${sfcLabel}</span></div>
+
+      <hr class="result-divider">
+
+      <div class="result-row"><span>Trip fuel</span><span>${fmt(tripBurnLbs)}</span></div>
+      <div class="result-row"><span>+ 45-min IFR reserve</span><span>${fmt(reserveLbs)}</span></div>
+      <div class="result-row"><span>+ 100 nm alternate</span><span>${fmt(altBurnLbs)}</span></div>
+      <div class="result-row"><span>+ Taxi</span><span>${fmt(TAXI_FUEL_LBS)}</span></div>
+      <div class="result-row"><span>+ Climb</span><span>${fmt(CLIMB_FUEL_LBS)}</span></div>
+      <div class="result-row"><span><strong>Total fuel required</strong></span><strong>${fmt(totalFuelLbs)} (${fmtGal(totalFuelGal)})</strong></div>
+      <div class="result-row"><span>Fuel-tank capacity</span><span>${fmt(fuelCapLbs)} (${fmtGal(perf.fuel_gal)}) · ${(fuelPct * 100).toFixed(1)}% used</span></div>
+
+      <hr class="result-divider">
+
+      <div class="result-row"><span>BOW (BEW + 700)</span><span>${fmt(BOW)}</span></div>
+      <div class="result-row"><span>Payload (PAX + bags)</span><span>${fmt(totalPayload)}</span></div>
+      <div class="result-row"><span>Zero-fuel weight</span><span>${fmt(zfw)} / MZFW ${fmt(MZFW)}</span></div>
+      <div class="result-row"><span>Estimated takeoff weight</span><span>${fmt(tow)} / MTOW ${fmt(perf.mtow)}</span></div>
+      <div class="result-row"><span>Estimated landing weight</span><span>${fmt(lwApprox)} / MLW ${fmt(perf.mlw)}</span></div>
+
+      <div class="status-badge s-${key}">${label}</div>
+      ${advisoryHTML}
+    `;
+    el.insertAdjacentHTML('beforeend',
+      _shareButtons(_fmtNonstop, {
+        tail: tailVal,
+        airport: document.getElementById('ns-arr').value || document.getElementById('ns-dep').value,
+      }));
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // TAB 3: RUNWAY & CRITICAL OAT
+  // ═════════════════════════════════════════════════════════════
+  function bflAtConditions(perf, weight_lbs, elev_ft, oat_c) {
+    // Two reference points (FuelerLinx):
+    //   Ref1: SL (elev 0), ISA (15°C)         -> bfl_sl
+    //   Ref2: 5,000 ft, +20°C                 -> bfl_5k20
+    // Use density altitude as the linear driver between them.
+    const da_ref2 = densityAlt(5000, 20);   // ≈ 6,788 ft
+    const da_now  = densityAlt(elev_ft, oat_c);
+    const frac    = da_now / da_ref2;       // can be < 0 (cold/SL) or > 1 (extreme)
+    const bflBase = perf.bfl_sl + (perf.bfl_5k20 - perf.bfl_sl) * frac;
+    // Weight scaling: BFL ∝ (W/MTOW)^1.5
+    const wRatio  = weight_lbs / perf.mtow;
+    const bflAdj  = bflBase * Math.pow(wRatio, BFL_WT_EXP);
+    return { bfl: Math.max(bflAdj, 0), bflBase, da_now, frac };
+  }
+
+  function criticalOatF(perf, weight_lbs, elev_ft, toda_ft) {
+    // Find OAT (°F) where bflAtConditions == toda_ft.
+    // Bisection on OAT in [-40°F, +130°F].
+    let lo = -40, hi = 130;
+    let bflLo = bflAtConditions(perf, weight_lbs, elev_ft, fF2C(lo)).bfl;
+    let bflHi = bflAtConditions(perf, weight_lbs, elev_ft, fF2C(hi)).bfl;
+    if (bflLo > toda_ft) return null;       // even at -40°F won't fit
+    if (bflHi < toda_ft) return Infinity;   // at 130°F still fits
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      const b   = bflAtConditions(perf, weight_lbs, elev_ft, fF2C(mid)).bfl;
+      if (b > toda_ft) hi = mid; else lo = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  function calcRunway() {
+    const tailVal = document.getElementById('rw-tail').value;
+    const elev    = Math.max(0, parseFloat(document.getElementById('rw-elev').value) || 0);
+    const toda    = Math.max(0, parseFloat(document.getElementById('rw-toda').value) || 0);
+    let   tow     = Math.max(0, parseFloat(document.getElementById('rw-tow').value)  || 0);
+    const oat_f   = parseFloat(document.getElementById('rw-oat').value);
+
+    const el = document.getElementById('rw-result');
+    if (!tailVal || toda <= 0 || isNaN(oat_f)) { el.classList.add('hidden'); return; }
+
+    const perf = FLEET_PERF[tailVal];
+    if (!perf) {
+      el.classList.remove('hidden', 'bg-tight', 'bg-clear', 'bg-ok', 'bg-over');
+      el.classList.add('bg-tight');
+      el.innerHTML = `<div class="result-row"><strong>Performance data unavailable for ${tailVal}.</strong></div>`;
+      return;
+    }
+
+    if (tow === 0) tow = perf.mtow;       // default to MTOW
+
+    const oat_c = fF2C(oat_f);
+    const isa_c = isaAtElev(elev);
+    const isa_dev = oat_c - isa_c;
+    const { bfl, bflBase, da_now } = bflAtConditions(perf, tow, elev, oat_c);
+
+    // Hard floor: GOM 2.4.3.d — 4,500 ft min runway
+    const todaUsable = toda;
+    const gomMinOk   = todaUsable >= 4500;
+
+    const margin   = todaUsable - bfl;
+    const critOatF = criticalOatF(perf, tow, elev, todaUsable);
+
+    let key, label, headline;
+    if (!gomMinOk) {
+      key = 'over';
+      label = '⚠  RUNWAY TOO SHORT — Below GOM 4,500 ft Minimum';
+      headline = `Available runway ${fmtFt(todaUsable)} is below the GOM 2.4.3.d hard floor of 4,500 ft for the Citation X.`;
+    } else if (margin < 0) {
+      key = 'over';
+      label = '⚠  INFEASIBLE — BFL Exceeds Available Runway';
+      headline = `Required BFL ${fmtFt(bfl)} exceeds available ${fmtFt(todaUsable)} by ${fmtFt(-margin)}.`;
+    } else if (margin < 500) {
+      key = 'tight';
+      label = '⚡  TIGHT — Margin Below 500 ft';
+      headline = `BFL ${fmtFt(bfl)} fits ${fmtFt(todaUsable)}, but margin is only ${fmtFt(margin)}. Watch winds & temp.`;
+    } else if (margin < 1500) {
+      key = 'ok';
+      label = '✓  OK — Standard Margin';
+      headline = `BFL ${fmtFt(bfl)} vs ${fmtFt(todaUsable)} — ${fmtFt(margin)} of cushion.`;
+    } else {
+      key = 'clear';
+      label = '✓  CLEAR — Comfortable Margin';
+      headline = `BFL ${fmtFt(bfl)} vs ${fmtFt(todaUsable)} — ${fmtFt(margin)} of cushion.`;
+    }
+
+    let critOatLine;
+    if (critOatF === null) {
+      critOatLine = `Even at &minus;40 °F, BFL exceeds available — likely a weight or runway-length problem, not temperature.`;
+    } else if (critOatF === Infinity) {
+      critOatLine = `Feasible across the full operating temp range up to +130 °F at this weight.`;
+    } else {
+      const headroom = critOatF - oat_f;
+      const dir = headroom >= 0 ? `headroom of ${headroom.toFixed(1)} °F before BFL = available runway`
+                                : `already ${Math.abs(headroom).toFixed(1)} °F past the limit`;
+      critOatLine = `Critical OAT (where BFL = ${fmtFt(todaUsable)}): <strong>${critOatF.toFixed(1)} °F</strong> — ${dir}.`;
+    }
+
+    el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
+    el.classList.add('bg-' + key);
+
+    el.innerHTML = `
+      <div class="result-row"><span><strong>Verdict</strong></span><strong>${headline}</strong></div>
+      <hr class="result-divider">
+
+      <div class="result-row"><span>Tail / Template / MTOW</span><span>${tailVal} · ${perf.template} · ${fmt(perf.mtow)}</span></div>
+      <div class="result-row"><span>Field elevation</span><span>${fmtFt(elev)} (ISA ${isa_c.toFixed(1)} °C)</span></div>
+      <div class="result-row"><span>OAT</span><span>${oat_f.toFixed(0)} °F (${oat_c.toFixed(1)} °C, ISA${isa_dev >= 0 ? '+' : ''}${isa_dev.toFixed(1)} °C)</span></div>
+      <div class="result-row"><span>Density altitude</span><span>${fmtFt(da_now)}</span></div>
+      <div class="result-row"><span>Planned takeoff weight</span><span>${fmt(tow)} (${(tow / perf.mtow * 100).toFixed(1)}% of MTOW)</span></div>
+
+      <hr class="result-divider">
+
+      <div class="result-row"><span>BFL @ MTOW (interpolated)</span><span>${fmtFt(bflBase)}</span></div>
+      <div class="result-row"><span>BFL @ planned weight</span><strong>${fmtFt(bfl)}</strong></div>
+      <div class="result-row"><span>Available runway / TODA</span><span>${fmtFt(todaUsable)}</span></div>
+      <div class="result-row"><span>Margin</span><strong>${margin >= 0 ? fmtFt(margin) : '−' + fmtFt(-margin)}</strong></div>
+
+      <hr class="result-divider">
+
+      <div class="result-row"><span>${critOatLine}</span></div>
+
+      <div class="status-badge s-${key}">${label}</div>
+    `;
+    el.insertAdjacentHTML('beforeend',
+      _shareButtons(_fmtRunway, {
+        tail: tailVal,
+        airport: document.getElementById('rw-airport').value,
+      }));
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // TAB 4: PIC FUEL BURN
+  // ═════════════════════════════════════════════════════════════
+  let picSortKey = 'd30';
+  let picSortDir = 'asc';      // asc = lowest burn first
+
+  // PIC Fuel Burn tab removed for public-facing build. The renderers
+  // below are stubs so any remaining references no-op cleanly.
+  function renderFleetSummary() { /* no-op: PIC tab removed */ }
+  function renderPicTable()     { /* no-op: PIC tab removed */ }
+  function filterPics()         { /* no-op: PIC tab removed */ }
+
+  // ═════════════════════════════════════════════════════════════
+  // TAB 3 ENHANCEMENT: Live OAT lookup
+  // Hits Open-Meteo's free forecast API (no auth, CORS-friendly).
+  // ═════════════════════════════════════════════════════════════
+  let _airportLookupResult = null;
+
+  function onAirportInput() {
+    const v = document.getElementById('rw-airport').value;
+    const rec = lookupAirport(v);
+    const status = document.getElementById('rw-fetch-status');
+    if (rec) {
+      _airportLookupResult = rec;
+      status.style.color = "#1b5e20";
+      status.textContent = `${rec.icao} · ${rec.name} · elev ${rec.elev.toLocaleString()} ft`;
+    } else if (v.trim().length >= 3) {
+      _airportLookupResult = null;
+      status.style.color = "#c41c1c";
+      status.textContent = `Unknown airport — enter ICAO/IATA in the database`;
+    } else {
+      _airportLookupResult = null;
+      status.textContent = "";
+    }
+  }
+
+  function onAirportBlur() {
+    const rec = _airportLookupResult;
+    if (rec) {
+      // Auto-fill elevation since we know it
+      document.getElementById('rw-elev').value = rec.elev;
+      calcRunway();
+    }
+  }
+
+  async function fetchLiveOat() {
+    const rec = _airportLookupResult || lookupAirport(document.getElementById('rw-airport').value);
+    const status = document.getElementById('rw-fetch-status');
+    const btn = document.getElementById('rw-fetch-oat');
+    if (!rec) {
+      status.style.color = "#c41c1c";
+      status.textContent = "Enter a known airport first";
+      return;
+    }
+    const etdInput = document.getElementById('rw-etd').value;
+    if (!etdInput) {
+      status.style.color = "#c41c1c";
+      status.textContent = "Set planned ETD (local) first";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.style.background = "#888";
+    status.style.color = "var(--muted)";
+    status.textContent = "Fetching forecast…";
+
+    try {
+      // Open-Meteo: hourly temperature_2m for the next 16 days, in F.
+      const url = `https://api.open-meteo.com/v1/forecast`
+                + `?latitude=${rec.lat}&longitude=${rec.lon}`
+                + `&hourly=temperature_2m`
+                + `&temperature_unit=fahrenheit`
+                + `&forecast_days=10`
+                + `&timezone=auto`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      const hours = data?.hourly?.time || [];
+      const temps = data?.hourly?.temperature_2m || [];
+      if (hours.length === 0) throw new Error("No hourly data returned");
+
+      // Find the hour closest to user's planned ETD (interpret as airport-local).
+      const target = new Date(etdInput);   // datetime-local input is unzoned;
+                                             // Open-Meteo timezone=auto returns
+                                             // forecast in the airport's tz.
+      let bestI = 0, bestDiff = Infinity;
+      for (let i = 0; i < hours.length; i++) {
+        const h = new Date(hours[i]);
+        const diff = Math.abs(h - target);
+        if (diff < bestDiff) { bestDiff = diff; bestI = i; }
+      }
+      const oat_f = temps[bestI];
+      const matchedTime = hours[bestI];
+
+      document.getElementById('rw-oat').value = Math.round(oat_f);
+      status.style.color = "#1b5e20";
+      status.textContent = `${rec.icao} · ${oat_f.toFixed(1)} °F at ${matchedTime.replace('T', ' ')} (local)`;
+      calcRunway();
+    } catch (exc) {
+      status.style.color = "#c41c1c";
+      status.textContent = `Forecast fetch failed: ${exc.message}`;
+    } finally {
+      btn.disabled = false;
+      btn.style.background = "var(--red)";
+    }
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // SHARED HELPERS for new features
+  // ═════════════════════════════════════════════════════════════
+
+  // Great-circle distance in nm between two lat/lon points.
+  function _gcNm(lat1, lon1, lat2, lon2) {
+    const R = 3440.065;   // Earth radius in nm
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2) ** 2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+
+  // Initial bearing from point 1 to point 2 in degrees true (0-360).
+  function _gcBearing(lat1, lon1, lat2, lon2) {
+    const toRad = d => d * Math.PI / 180;
+    const toDeg = r => r * 180 / Math.PI;
+    const dLon = toRad(lon2 - lon1);
+    const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+    const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2))
+            - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+  }
+
+  // Wind component along course: + = headwind, - = tailwind.
+  // Aviation convention: wind_dir is direction wind is BLOWING FROM.
+  function _headwindComponent(courseDeg, windSpeedKt, windDirDeg) {
+    const delta = (windDirDeg - courseDeg) * Math.PI / 180;
+    return windSpeedKt * Math.cos(delta);
+  }
+
+  // ── FL → Open-Meteo pressure level mapping ────────────────────────
+  // Open-Meteo offers stock pressure levels at: 850, 700, 500, 300, 250,
+  // 200, 150, 100 hPa. Pick the closest one to the requested FL.
+  function _hpaForFL(fl) {
+    fl = parseInt(fl) || 450;
+    if (fl <= 320)       return 300;   // FL250-FL320 → 300 hPa (~FL300)
+    if (fl <= 380)       return 250;   // FL330-FL380 → 250 hPa (~FL340)
+    if (fl <= 420)       return 200;   // FL390-FL420 → 200 hPa (~FL390)
+    return 150;                         // FL430+      → 150 hPa (~FL450)
+  }
+
+  // ── Cruise SFC multiplier vs FL370 baseline ───────────────────────
+  // Citation X is most efficient FL410-FL450; burn climbs significantly
+  // when forced low (MEL situations like RVSM-out at FL280-FL290).
+  // Numbers calibrated to published Citation X cruise charts.
+  function _sfcMultForFL(fl) {
+    fl = parseInt(fl) || 450;
+    if (fl >= 450) return 0.90;   // peak efficiency
+    if (fl >= 430) return 0.92;
+    if (fl >= 410) return 0.94;
+    if (fl >= 390) return 0.97;
+    if (fl >= 370) return 1.00;   // baseline
+    if (fl >= 330) return 1.07;
+    if (fl >= 290) return 1.22;   // MEL-restricted, painful
+    return 1.45;                   // FL250 — RVSM-out, very heavy
+  }
+
+  // Fetch winds at the given pressure level (hPa) at lat/lon + UTC time.
+  async function _fetchWindAt(lat, lon, opTimeUtc, hpa = 200) {
+    const speedVar = `wind_speed_${hpa}hPa`;
+    const dirVar   = `wind_direction_${hpa}hPa`;
+    const url = `https://api.open-meteo.com/v1/forecast`
+              + `?latitude=${lat.toFixed(2)}&longitude=${lon.toFixed(2)}`
+              + `&hourly=${speedVar},${dirVar}`
+              + `&wind_speed_unit=kn&timezone=UTC&forecast_days=7`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const times  = data.hourly?.time || [];
+    const speeds = data.hourly?.[speedVar] || [];
+    const dirs   = data.hourly?.[dirVar] || [];
+    if (times.length === 0) return null;
+    let bestI = 0, bestDiff = Infinity;
+    for (let i = 0; i < times.length; i++) {
+      const diff = Math.abs(new Date(times[i]) - opTimeUtc);
+      if (diff < bestDiff) { bestDiff = diff; bestI = i; }
+    }
+    return { speed: speeds[bestI], dir: dirs[bestI] };
+  }
+
+  // Fetch route distance + average headwind given DEP/ARR codes + ETD.
+  // hpa selects the cruise-altitude pressure level (default 150 = FL450).
+  async function fetchRouteAndWind(depCode, arrCode, etdLocalStr, hpa = 150) {
+    const dep = lookupAirport(depCode);
+    const arr = lookupAirport(arrCode);
+    if (!dep) throw new Error(`Unknown DEP airport: ${depCode}`);
+    if (!arr) throw new Error(`Unknown ARR airport: ${arrCode}`);
+    const distNm = _gcNm(dep.lat, dep.lon, arr.lat, arr.lon);
+    let headwindKt = 0;
+    if (etdLocalStr) {
+      const etd = new Date(etdLocalStr);
+      const course = _gcBearing(dep.lat, dep.lon, arr.lat, arr.lon);
+      // Sample 3 points along the great circle (1/4, 1/2, 3/4)
+      const components = [];
+      for (const f of [0.25, 0.5, 0.75]) {
+        const lat = dep.lat + (arr.lat - dep.lat) * f;
+        const lon = dep.lon + (arr.lon - dep.lon) * f;
+        try {
+          const w = await _fetchWindAt(lat, lon, etd, hpa);
+          if (w) components.push(_headwindComponent(course, w.speed, w.dir));
+        } catch (e) { /* skip this sample */ }
+      }
+      if (components.length > 0) {
+        headwindKt = components.reduce((a, b) => a + b, 0) / components.length;
+      }
+    }
+    return { distNm: Math.round(distNm), headwindKt: Math.round(headwindKt), dep, arr };
+  }
+
+  // Auto-fetch route + wind for the Nonstop tab. Triggered as the user
+  // types DEP/ARR or picks an ETD. Debounced so we don't hammer the API.
+  let _nsFetchTimer = null;
+  function _nsAutoFetch() {
+    if (_nsFetchTimer) clearTimeout(_nsFetchTimer);
+    _nsFetchTimer = setTimeout(_nsAutoFetchFire, 600);
+  }
+  async function _nsAutoFetchFire() {
+    const dep = document.getElementById('ns-dep').value.trim();
+    const arr = document.getElementById('ns-arr').value.trim();
+    const etd = document.getElementById('ns-etd').value;
+    const fl  = document.getElementById('ns-fl')?.value || "450";
+    const hpa = _hpaForFL(fl);
+    const status = document.getElementById('ns-fetch-status');
+    const derived = document.getElementById('ns-derived');
+    const distDisp = document.getElementById('ns-dist-display');
+    const windDisp = document.getElementById('ns-wind-display');
+
+    if (!dep || !arr) {
+      derived.style.display = "none";
+      status.style.color = "var(--muted)";
+      status.textContent = dep || arr ? "Enter both DEP and ARR airports…" : "";
+      document.getElementById('ns-dist').value = 0;
+      document.getElementById('ns-headwind').value = 0;
+      calcNonstop();
+      return;
+    }
+
+    // Resolve distance immediately (no network needed)
+    const depRec = lookupAirport(dep);
+    const arrRec = lookupAirport(arr);
+    if (!depRec || !arrRec) {
+      derived.style.display = "none";
+      status.style.color = "#c41c1c";
+      status.textContent = `Unknown airport: ${depRec ? arr : dep}`;
+      return;
+    }
+    const distNm = Math.round(_gcNm(depRec.lat, depRec.lon, arrRec.lat, arrRec.lon));
+    document.getElementById('ns-dist').value = distNm;
+    distDisp.textContent = distNm.toLocaleString() + " nm";
+    derived.style.display = "grid";
+
+    // Wind: live forecast if ETD is within 7 days; zero-wind fallback otherwise.
+    let headwindKt = 0;
+    let windSrc = `zero-wind baseline (no ETD set) · cruise FL${fl}`;
+    if (etd) {
+      const etdDate = new Date(etd);
+      const now = new Date();
+      const daysOut = (etdDate - now) / (1000 * 60 * 60 * 24);
+      if (daysOut < -1) {
+        windSrc = `past leg — using zero-wind baseline · cruise FL${fl}`;
+      } else if (daysOut > 7) {
+        windSrc = `${daysOut.toFixed(0)} days out — beyond Open-Meteo forecast range · zero-wind baseline · cruise FL${fl}`;
+      } else {
+        // Live forecast path at the chosen pressure level
+        status.style.color = "var(--muted)";
+        status.textContent = `Fetching FL${fl} winds aloft (${hpa} hPa)…`;
+        try {
+          const result = await fetchRouteAndWind(dep, arr, etd, hpa);
+          headwindKt = result.headwindKt;
+          windSrc = `Open-Meteo FL${fl} (${hpa} hPa, forecast)`;
+        } catch (exc) {
+          windSrc = `forecast fetch failed (${exc.message}) · zero-wind baseline · cruise FL${fl}`;
+        }
+      }
+    }
+
+    document.getElementById('ns-headwind').value = headwindKt;
+    const windLabel = headwindKt > 0 ? `${headwindKt} kt HEADWIND` :
+                      headwindKt < 0 ? `${Math.abs(headwindKt)} kt TAILWIND` :
+                                       "calm aloft";
+    windDisp.textContent = `${windLabel}  ·  ${windSrc}`;
+    status.style.color = "#1b5e20";
+    status.textContent = `${depRec.icao} → ${arrRec.icao}  ·  cruise FL${fl}  ·  auto-populated`;
+    calcNonstop();
+  }
+  // Legacy alias — kept in case any external link still calls the old name.
+  function fetchNonstopRouteData() { return _nsAutoFetchFire(); }
+
+  // Slack-share: copy formatted markdown to clipboard
+  function shareToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = "Copied!  ✓";
+      btn.classList.add("pinned");
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove("pinned");
+      }, 1500);
+    }).catch(() => {
+      btn.textContent = "Copy failed";
+    });
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // JI DEEP-LINKS — generate JetInsight URLs from tail/trip
+  // ═════════════════════════════════════════════════════════════
+  const JI_BASE = "https://portal.jetinsight.com";
+
+  function jiTailLink(tail) {
+    if (!tail) return "";
+    // Aircraft schedule view filtered to this tail
+    return `${JI_BASE}/schedule/aircraft?view_name=rollingWeek&first_day=today`
+         + `&time_zone=LOCAL_TIME&search=${encodeURIComponent(tail)}`;
+  }
+  function jiTripLink(tripId) {
+    if (!tripId) return "";
+    return `${JI_BASE}/trips/${encodeURIComponent(tripId)}`;
+  }
+  function jiAirportLink(code) {
+    if (!code) return "";
+    const c = code.toUpperCase().replace(/^K/, "");
+    return `${JI_BASE}/airports/K${c}`;
+  }
+
+  // Append a per-result-panel "Copy for Slack" button + (optional) JI link.
+  // `formatter` returns the text to copy; `panel` is the .result element.
+  // Renders the buttons OUTSIDE the panel's main innerHTML so they don't
+  // get blown away by re-renders — appended via the element's outerHTML.
+  function _shareButtons(formatter, jiLinks = {}) {
+    const cb = `(window._formatterRegistry = window._formatterRegistry || {})`;
+    const id = `_fmt_${Math.random().toString(36).slice(2, 9)}`;
+    if (typeof window !== "undefined") {
+      window._formatterRegistry = window._formatterRegistry || {};
+      window._formatterRegistry[id] = formatter;
+    }
+    const jiTailHtml = jiLinks.tail
+      ? `<a class="ji-link" href="${jiTailLink(jiLinks.tail)}" target="_blank" rel="noopener">↗ ${jiLinks.tail} in JI</a>`
+      : "";
+    const jiArrHtml = jiLinks.airport
+      ? `<a class="ji-link" href="${jiAirportLink(jiLinks.airport)}" target="_blank" rel="noopener">↗ ${jiLinks.airport.toUpperCase()} in JI</a>`
+      : "";
+    return `<div style="margin-top:14px;">
+      <button class="share-btn" onclick="shareToClipboard(window._formatterRegistry['${id}'](), this)">
+        📋  Copy for Slack
+      </button>${jiTailHtml}${jiArrHtml}
+    </div>`;
+  }
+
+  // ── Per-tab formatters (return markdown-friendly text for Slack) ─────
+  function _fmtCalc1() {
+    const used = parseFloat(document.getElementById('c1-full').value) || 0;
+    const remaining = 1685 - Math.max(0, used);
+    return `*Max Payload — N760XJ generic baseline*\n`
+         + `BEW 22,015 lbs · BOW 22,715 · MZFW 24,400 · Max payload 1,685\n`
+         + `Payload entered: ${used.toLocaleString()} lbs · Remaining cushion: ${remaining >= 0 ? '+' : '−'}${Math.abs(remaining).toLocaleString()} lbs`;
+  }
+  function _fmtCalc2() {
+    const tail = document.getElementById('c2-tail').value;
+    if (!tail) return "Pick a tail first.";
+    const bew = FLEET_BEW[tail];
+    if (bew === null) return `${tail} BEW unavailable — contact dispatch.`;
+    const pax = parseFloat(document.getElementById('c2-paxwt').value) || 0;
+    const bag = parseFloat(document.getElementById('c2-bags').value) || 0;
+    const bow = bew + 700;
+    const mp = MZFW - bow;
+    const remaining = mp - pax - bag;
+    return `*Max Payload — ${tail}*\n`
+         + `BEW ${bew.toLocaleString()} · BOW ${bow.toLocaleString()} · Max payload ${mp.toLocaleString()}\n`
+         + `Pax ${pax.toLocaleString()} + Bag ${bag.toLocaleString()} = ${(pax + bag).toLocaleString()}\n`
+         + `*Remaining cushion: ${remaining >= 0 ? '+' : '−'}${Math.abs(remaining).toLocaleString()} lbs*`;
+  }
+  function _fmtNonstop() {
+    const tail = document.getElementById('ns-tail').value;
+    const dep = document.getElementById('ns-dep').value;
+    const arr = document.getElementById('ns-arr').value;
+    const dist = document.getElementById('ns-dist').value;
+    const hw = document.getElementById('ns-headwind').value;
+    const fl = document.getElementById('ns-fl')?.value || "450";
+    const pax = document.getElementById('ns-paxwt').value;
+    const bag = document.getElementById('ns-bags').value;
+    const result = document.getElementById('ns-result');
+    const verdict = result.querySelector('.status-badge')?.textContent || "(no verdict)";
+    return `*Nonstop Feasibility — ${tail || '?'}  ${dep || '?'}→${arr || '?'}*\n`
+         + `Cruise FL${fl} · Distance ${dist} nm · Wind ${hw > 0 ? hw + ' kt headwind' : hw < 0 ? Math.abs(hw) + ' kt tailwind' : 'calm'}\n`
+         + `Pax ${pax} lbs · Bag ${bag} lbs\n`
+         + `Verdict: ${verdict.trim()}`;
+  }
+  function _fmtRunway() {
+    const tail = document.getElementById('rw-tail').value;
+    const apt = document.getElementById('rw-airport').value || "(airport)";
+    const elev = document.getElementById('rw-elev').value;
+    const toda = document.getElementById('rw-toda').value;
+    const tow = document.getElementById('rw-tow').value;
+    const oat = document.getElementById('rw-oat').value;
+    const result = document.getElementById('rw-result');
+    const verdict = result.querySelector('.status-badge')?.textContent || "(no verdict)";
+    return `*Runway & Critical OAT — ${tail || '?'} @ ${apt}*\n`
+         + `Elev ${elev} ft · TODA ${toda} ft · TOW ${tow || 'MTOW'} lbs · OAT ${oat}°F\n`
+         + `Verdict: ${verdict.trim()}`;
+  }
+  function _fmtGate() {
+    const tail = document.getElementById('gt-tail').value;
+    const dep = document.getElementById('gt-dep').value;
+    const arr = document.getElementById('gt-arr').value;
+    const result = document.getElementById('gt-result');
+    const verdict = result.querySelector('.status-badge')?.textContent || "(no verdict)";
+    // Pull each check pass/fail
+    const rows = [...result.querySelectorAll('.result-row')]
+      .map(r => r.textContent.trim().replace(/\s+/g, ' '))
+      .filter(t => t.includes('GOM') || t.includes('MZFW') || t.includes('MTOW') || t.includes('MLW'));
+    return `*Pre-Flight Gate — ${tail || '?'}  ${dep || '?'}→${arr || '?'}*\n`
+         + `${verdict.trim()}\n\n`
+         + rows.map(r => `• ${r}`).join('\n');
+  }
+  function _fmtTailFinder() {
+    const dist = document.getElementById('tf-dist').value;
+    const pax = document.getElementById('tf-paxwt').value;
+    const bag = document.getElementById('tf-bags').value;
+    const rows = [...document.querySelectorAll('#tf-result tbody tr')].slice(0, 5)
+      .map(r => {
+        const cells = [...r.querySelectorAll('td')].map(c => c.textContent.trim());
+        return `• ${cells[0]}  BEW ${cells[1]}  cushion ${cells[3]}  ${cells[4]?.split(' ')[0] || ''}`;
+      });
+    return `*Tail Finder — ${dist} nm · pax ${pax} · bag ${bag}*\n`
+         + `Top 5 by fit:\n${rows.join('\n')}`;
+  }
+  // _fmtQuote removed — Quote-Cost tab no longer in the build.
+
+  // ═════════════════════════════════════════════════════════════
+  // TAB 5: PRE-FLIGHT GATE — GO/NO-GO across GOM 2.4 hard floors
+  // ═════════════════════════════════════════════════════════════
+  function calcGate() {
+    const tail   = document.getElementById('gt-tail').value;
+    const dep    = document.getElementById('gt-dep').value;
+    const arr    = document.getElementById('gt-arr').value;
+    const picName = document.getElementById('gt-pic').value;
+    const paxWt  = Math.max(0, parseFloat(document.getElementById('gt-paxwt').value) || 0);
+    const bags   = Math.max(0, parseFloat(document.getElementById('gt-bags').value) || 0);
+    const oatF   = parseFloat(document.getElementById('gt-oat-dep').value);
+    const headwind = parseFloat(document.getElementById('gt-headwind').value) || 0;
+
+    const el = document.getElementById('gt-result');
+    if (!tail || !dep || !arr) {
+      el.classList.add('hidden');
+      return;
+    }
+
+    const bew = FLEET_BEW[tail];
+    const perf = FLEET_PERF[tail];
+    if (bew === null || bew === undefined || !perf) {
+      el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
+      el.classList.add('bg-tight');
+      el.innerHTML = `<div class="result-row"><strong>BEW or perf data unavailable for ${tail}.</strong></div>`;
+      return;
+    }
+    const depRec = lookupAirport(dep);
+    const arrRec = lookupAirport(arr);
+    if (!depRec || !arrRec) {
+      el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
+      el.classList.add('bg-tight');
+      el.innerHTML = `<div class="result-row"><strong>Airport not found in DB. Check ICAO/IATA.</strong></div>`;
+      return;
+    }
+
+    const distNm = _gcNm(depRec.lat, depRec.lon, arrRec.lat, arrRec.lon);
+
+    // Burn rate
+    let burnGalHr = PILOT_FUEL_REPORT.fleet_avg.d30;
+    if (picName) {
+      const p = pilotByName(picName);
+      if (p && p.d30 !== null) burnGalHr = p.d30;
+    }
+
+    // Fuel build-up with wind correction
+    const groundSpeed = Math.max(CRUISE_KTAS - headwind, 200);
+    const tripHrs = distNm / groundSpeed;
+    const tripBurnLbs = tripHrs * burnGalHr * LBS_PER_GAL;
+    const reserveLbs = (RESERVE_MIN / 60) * burnGalHr * LBS_PER_GAL;
+    const altBurnLbs = (ALTERNATE_NM / CRUISE_KTAS) * burnGalHr * LBS_PER_GAL;
+    const totalFuelLbs = tripBurnLbs + reserveLbs + altBurnLbs + TAXI_FUEL_LBS + CLIMB_FUEL_LBS;
+    const fuelCapLbs = perf.fuel_gal * LBS_PER_GAL;
+    const fuelPct = totalFuelLbs / fuelCapLbs;
+
+    // Weights
+    const BOW = bew + CREW_ALLOW;
+    const payload = paxWt + bags;
+    const zfw = BOW + payload;
+    const tow = zfw + totalFuelLbs;
+    const lwApprox = tow - tripBurnLbs;
+
+    // Runway BFL at planned weight + OAT
+    const elev = depRec.elev;
+    const oatC = fF2C(oatF);
+    const { bfl, bflBase, da_now } = bflAtConditions(perf, tow, elev, oatC);
+    // Note: we don't know runway length without per-airport runway data —
+    // assume 5,500 ft (GOM PIC review threshold) as the floor for now.
+    const assumedRwyFt = 5500;
+
+    // ── Run all GOM 2.4 checks ─────────────────────────────────────────
+    const checks = [];
+    checks.push({
+      label: "GOM 2.4.3.b — Range",
+      pass: distNm <= perf.range_nm,
+      note: `Distance ${fmtNum(distNm)} nm vs published range ${fmtNum(perf.range_nm)} nm (${(distNm/perf.range_nm*100).toFixed(0)}% used)`,
+    });
+    checks.push({
+      label: "GOM 2.4.3.b — Fuel capacity",
+      pass: fuelPct < 1.0,
+      warn: fuelPct >= 0.95,
+      note: `Trip fuel ${fmt(totalFuelLbs)} vs capacity ${fmt(fuelCapLbs)} (${(fuelPct*100).toFixed(1)}%)`,
+    });
+    checks.push({
+      label: "MZFW",
+      pass: zfw <= MZFW,
+      note: `ZFW ${fmt(zfw)} vs MZFW ${fmt(MZFW)} (${(zfw/MZFW*100).toFixed(1)}%)`,
+    });
+    checks.push({
+      label: "MTOW",
+      pass: tow <= perf.mtow,
+      note: `TOW ${fmt(tow)} vs MTOW ${fmt(perf.mtow)} (${(tow/perf.mtow*100).toFixed(1)}%)`,
+    });
+    checks.push({
+      label: "MLW (estimated)",
+      pass: lwApprox <= perf.mlw,
+      note: `LW ${fmt(lwApprox)} vs MLW ${fmt(perf.mlw)} (${(lwApprox/perf.mlw*100).toFixed(1)}%)`,
+    });
+    checks.push({
+      label: "GOM 2.4.3.d — DEP runway @ OAT",
+      pass: bfl <= assumedRwyFt,
+      note: `BFL ${fmtFt(bfl)} at planned weight + ${oatF}°F vs assumed ${fmtFt(assumedRwyFt)}. Verify actual runway length.`,
+    });
+
+    const allPass = checks.every(c => c.pass);
+    const anyWarn = checks.some(c => c.warn);
+    let key, label;
+    if (!allPass) { key = "over"; label = "✗ NO-GO — One or more GOM hard floors fail"; }
+    else if (anyWarn) { key = "tight"; label = "⚡ GO with caution — verify against actual flight plan"; }
+    else { key = "clear"; label = "✓ GO — All GOM 2.4 hard floors pass"; }
+
+    const checkRows = checks.map(c => {
+      const icon = c.pass ? (c.warn ? "⚡" : "✓") : "✗";
+      const color = c.pass ? (c.warn ? "#bf360c" : "#1b5e20") : "#c41c1c";
+      return `<div class="result-row"><span style="color:${color}">${icon}  ${c.label}</span><span>${c.note}</span></div>`;
+    }).join("");
+
+    el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
+    el.classList.add('bg-' + key);
+    el.innerHTML = `
+      <div class="result-row"><span><strong>Verdict</strong></span><strong>${label}</strong></div>
+      <hr class="result-divider">
+      ${checkRows}
+      <hr class="result-divider">
+      <div class="result-row"><span>Headwind</span><span>${headwind > 0 ? headwind + " kt headwind" : headwind < 0 ? Math.abs(headwind) + " kt tailwind" : "zero (set in input)"}</span></div>
+      <div class="result-row"><span>Cruise time</span><span>${tripHrs.toFixed(2)} hr at ${groundSpeed} kt</span></div>
+      <div class="status-badge s-${key}">${label}</div>
+      <div class="reasoning"><strong>Note on runway check:</strong> Assumed runway 5,500 ft (PIC-review threshold). Verify actual DEP runway length before release. BFL math uses (W/MTOW)<sup>1.5</sup> scaling between SL/ISA and 5,000 ft / +20 °C reference points.</div>
+    `;
+    el.insertAdjacentHTML('beforeend',
+      _shareButtons(_fmtGate, { tail: tail, airport: dep }));
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // TAB 6: TAIL FINDER
+  // ═════════════════════════════════════════════════════════════
+  function calcTailFinder() {
+    const distNm = Math.max(0, parseFloat(document.getElementById('tf-dist').value) || 0);
+    const picName = document.getElementById('tf-pic').value;
+    const paxWt = Math.max(0, parseFloat(document.getElementById('tf-paxwt').value) || 0);
+    const bags = Math.max(0, parseFloat(document.getElementById('tf-bags').value) || 0);
+
+    const el = document.getElementById('tf-result');
+    if (distNm <= 0) {
+      el.innerHTML = `<div class="reasoning">Enter a one-way distance to rank tails.</div>`;
+      return;
+    }
+
+    let burnGalHr = PILOT_FUEL_REPORT.fleet_avg.d30;
+    if (picName) {
+      const p = pilotByName(picName);
+      if (p && p.d30 !== null) burnGalHr = p.d30;
+    }
+
+    const tripHrs = distNm / CRUISE_KTAS;
+    const tripBurnLbs = tripHrs * burnGalHr * LBS_PER_GAL;
+    const reserveLbs = (RESERVE_MIN / 60) * burnGalHr * LBS_PER_GAL;
+    const altBurnLbs = (ALTERNATE_NM / CRUISE_KTAS) * burnGalHr * LBS_PER_GAL;
+    const totalFuelLbs = tripBurnLbs + reserveLbs + altBurnLbs + TAXI_FUEL_LBS + CLIMB_FUEL_LBS;
+    const payload = paxWt + bags;
+
+    // Score every tail
+    const ranking = [];
+    for (const [tail, bew] of Object.entries(FLEET_BEW)) {
+      if (bew === null) continue;
+      const perf = FLEET_PERF[tail];
+      if (!perf) continue;
+      const BOW = bew + CREW_ALLOW;
+      const zfw = BOW + payload;
+      const tow = zfw + totalFuelLbs;
+      const fitsRange = distNm <= perf.range_nm;
+      const fitsZFW = zfw <= MZFW;
+      const fitsMTOW = tow <= perf.mtow;
+      const fitsCapacity = totalFuelLbs <= perf.fuel_gal * LBS_PER_GAL;
+      const cushionLbs = MZFW - zfw;
+      const allFit = fitsRange && fitsZFW && fitsMTOW && fitsCapacity;
+      ranking.push({
+        tail, bew, BOW, zfw, tow, cushionLbs, fitsRange, fitsZFW, fitsMTOW, fitsCapacity, allFit,
+        template: perf.template, mtow: perf.mtow, range_nm: perf.range_nm,
+      });
+    }
+    // Sort: passing tails first, then by largest cushion (= lightest BEW after subtracting load)
+    ranking.sort((a, b) => {
+      if (a.allFit !== b.allFit) return a.allFit ? -1 : 1;
+      return b.cushionLbs - a.cushionLbs;
+    });
+
+    const rows = ranking.map(r => {
+      const status = r.allFit ? "✓ FITS" : (r.cushionLbs < 0 ? "✗ over MZFW" : "✗ check");
+      const cls = r.allFit ? "below" : "over";
+      const fails = [];
+      if (!r.fitsRange)    fails.push(`range (${fmtNum(distNm)}/${fmtNum(r.range_nm)} nm)`);
+      if (!r.fitsZFW)      fails.push(`MZFW`);
+      if (!r.fitsMTOW)     fails.push(`MTOW`);
+      if (!r.fitsCapacity) fails.push(`fuel cap`);
+      const failNote = fails.length ? ` <span class="over">— fails: ${fails.join(", ")}</span>` : "";
+      return `<tr>
+        <td><strong>${r.tail}</strong></td>
+        <td class="col-num">${r.bew.toLocaleString()}</td>
+        <td>${r.template}</td>
+        <td class="col-num">${(r.cushionLbs >= 0 ? "+" : "−") + Math.abs(r.cushionLbs).toLocaleString()}</td>
+        <td><span class="${cls}">${status}</span>${failNote}</td>
+      </tr>`;
+    }).join("");
+
+    const passCount = ranking.filter(r => r.allFit).length;
+    el.innerHTML = `
+      <div class="reasoning">
+        <strong>${passCount} of ${ranking.length}</strong> tails fit this load (${fmtNum(distNm)} nm, payload ${fmt(payload)}, fuel block ${fmt(totalFuelLbs)} at ${burnGalHr.toFixed(0)} gal/hr).
+      </div>
+      <table class="pic-table" style="margin-top:14px;">
+        <thead><tr>
+          <th>Tail</th><th class="col-num">BEW (lbs)</th><th>Template</th>
+          <th class="col-num">Cushion vs MZFW</th><th>Status</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+    el.insertAdjacentHTML('beforeend', _shareButtons(_fmtTailFinder));
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // TAB 7: FLEET ACTIVITY REFERENCE
+  // ═════════════════════════════════════════════════════════════
+  function renderActivity() {
+    // Top routes
+    const routesHtml = `
+      <div class="reasoning"><strong>${ACTIVITY_DATA.total_legs.toLocaleString()} legs</strong> · <strong>${ACTIVITY_DATA.total_block_hrs.toLocaleString()} block hrs</strong> · <strong>${ACTIVITY_DATA.distinct_trips.toLocaleString()} trips</strong>${' · '}<em>${ACTIVITY_DATA.period}</em></div>
+      <table class="pic-table" style="margin-top:10px;">
+        <thead><tr><th>DEP → ARR</th><th class="col-num">Flights</th></tr></thead>
+        <tbody>${ACTIVITY_DATA.top_routes.map(([o,d,n]) =>
+          `<tr><td>${o} → ${d}</td><td class="col-num">${n}</td></tr>`).join("")}</tbody>
+      </table>`;
+    document.getElementById('act-routes').innerHTML = routesHtml;
+
+    // Top airports
+    const airportsHtml = `
+      <table class="pic-table" style="margin-top:0;">
+        <thead><tr><th>Airport</th><th class="col-num">Ops</th></tr></thead>
+        <tbody>${ACTIVITY_DATA.top_airports.slice(0, 30).map(([code, n]) =>
+          `<tr><td>${code}</td><td class="col-num">${n}</td></tr>`).join("")}</tbody>
+      </table>`;
+    document.getElementById('act-airports').innerHTML = airportsHtml;
+
+    /* renderActivityPics removed: per-PIC roll-up was stripped for public-facing build. */
+  }
+  function renderActivityPics() { /* no-op: per-PIC activity removed for public build */ }
+
+  // ═════════════════════════════════════════════════════════════
+  // LOCALSTORAGE — defaults + last-5 history
+  // ═════════════════════════════════════════════════════════════
+  const _LS_KEY = "je_calc_v2";
+
+  function _saveDefault(key, value) {
+    try {
+      const cur = JSON.parse(localStorage.getItem(_LS_KEY) || "{}");
+      cur[key] = value;
+      localStorage.setItem(_LS_KEY, JSON.stringify(cur));
+    } catch (e) { /* localStorage might be unavailable */ }
+  }
+  function _loadDefault(key, fallback) {
+    try {
+      const cur = JSON.parse(localStorage.getItem(_LS_KEY) || "{}");
+      return cur[key] !== undefined ? cur[key] : fallback;
+    } catch (e) { return fallback; }
+  }
+  function _restoreDefaults() {
+    // Restore tail + PIC if previously saved
+    const tail = _loadDefault("tail", "");
+    const pic = _loadDefault("pic", "");
+    if (tail) {
+      ['c2-tail', 'ns-tail', 'rw-tail', 'gt-tail'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && [...el.options].some(o => o.value === tail)) el.value = tail;
+      });
+      if (document.getElementById('c2-tail').value === tail) onTailChange();
+    }
+    if (pic) {
+      ['ns-pic', 'gt-pic', 'tf-pic'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && [...el.options].some(o => o.value === pic)) el.value = pic;
+      });
+    }
+  }
+  // Auto-save defaults on change
+  function _wireDefaultSavers() {
+    ['c2-tail', 'ns-tail', 'rw-tail', 'gt-tail'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', () => {
+        if (el.value) _saveDefault("tail", el.value);
+      });
+    });
+    ['ns-pic', 'gt-pic', 'tf-pic'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', () => {
+        if (el.value) _saveDefault("pic", el.value);
+      });
+    });
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // INIT
+  // ═════════════════════════════════════════════════════════════
+  populateTailDropdowns();
+  populatePicDropdown();
   calcGeneric();
+  renderFleetSummary();
+  renderPicTable();
+  renderActivity();
+  _restoreDefaults();
+  _wireDefaultSavers();
 </script>
 
 </body>
