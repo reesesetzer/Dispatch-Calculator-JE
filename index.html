@@ -1435,6 +1435,11 @@
 
   const VISIT_THRESHOLD = 3;
 
+  // MX-placeholder airports JE puts into the schedule for reasons unrelated
+  // to actual ops (e.g. VTBD = maintenance placeholder). Suppressed from
+  // [RURAL] / [LOW-VISIT] flags so they don't fire forever.
+  const EXCLUDED_AIRPORTS = new Set(["VTBD"]);
+
   function getVisitCount(code, tail) {
     if (!code) return 0;
     const c = code.toUpperCase().trim();
@@ -1470,6 +1475,7 @@
     //      prompt would be redundant. Other concerns (runway-min, etc.)
     //      still fire from their own evaluators.
     if (!isRuralAirport(code)) return null;
+    if (EXCLUDED_AIRPORTS.has(code.toUpperCase().trim())) return null;
     if (getFleetVisitCount(code) >= VISIT_THRESHOLD) return null;
     return `Rural field. ${FBO_CALL_CHECKLIST}`;
   }
@@ -1479,6 +1485,8 @@
     // Per Reese: "we just need to know if ANY of the planes have been
     // there, not tail specific." The `tail` parameter is accepted for
     // API parity but intentionally unused in the rendered note.
+    if (!code) return null;
+    if (EXCLUDED_AIRPORTS.has(code.toUpperCase().trim())) return null;
     const n_fleet = getFleetVisitCount(code);
     if (n_fleet >= VISIT_THRESHOLD) return null;
     const win_str = `${VISIT_DATA.window[0]} to ${VISIT_DATA.window[1]}`;
