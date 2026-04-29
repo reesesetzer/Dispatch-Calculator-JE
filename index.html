@@ -1376,29 +1376,33 @@
   // ACTIVITY DATA — 9-month historical mine from JE Citation X log
   // ═════════════════════════════════════════════════════════════
   const ACTIVITY_DATA = {
-    total_legs: 5066, total_block_hrs: 11132.8, distinct_trips: 2408,
-    period: "Sep 2025 – Apr 2026 (~9 months)",
+    // Sourced from Compliance Aircraft Completed flight logs CSV (one row
+    // per leg, ~11 months Sep 2025 – Apr 2026). Refresh with:
+    //   py C:/JetInsightBot/_build_airport_visit_counts.py <path/to.csv>
+    // then re-derive top_airports/top_routes (see _activity_extract.py).
+    total_legs: 4616, total_block_hrs: 12211.6, distinct_trips: 4648,
+    period: "Sep 2025 – Apr 2026 (~8 months)",
     top_airports: [
-      ["TEB",400],["OPF",232],["PBI",217],["BCT",216],["HPN",186],["LAS",177],
-      ["SDL",177],["BED",173],["APF",171],["EGE",164],["ASE",158],["VNY",150],
-      ["IAD",139],["AUS",137],["BZN",125],["SLC",124],["TTA",117],["MYNN",116],
-      ["HOU",112],["DAL",105],["PSP",100],["JAC",99],["APA",98],["RIL",96],
-      ["RDU",94],["BNA",91],["PHL",86],["MDW",86],["PWK",83],["SNA",82],
-      ["RSW",80],["SFO",76],["FLL",76],["SUA",69],["SRQ",67],["TUS",64],
-      ["MMSL",59],["BOS",59],["SAN",58],["SJC",57],["SAT",56],["TPA",55],
-      ["VRB",54],["BFI",53],["MMSD",53],["FRG",51],["FXE",51],["CHS",50],
-      ["TRM",50],["BJC",50],
+      ["TEB",378],["OPF",226],["BCT",211],["PBI",210],["HPN",178],["BED",174],
+      ["APF",167],["SDL",166],["LAS",158],["EGE",153],["VNY",149],["ASE",147],
+      ["IAD",128],["AUS",123],["SLC",118],["BZN",118],["TTA",116],["HOU",107],
+      ["MYNN",98],["JAC",98],["DAL",97],["APA",95],["PSP",94],["RDU",91],
+      ["BNA",89],["RIL",88],["PHL",85],["MDW",78],["PWK",78],["SNA",74],
+      ["SFO",74],["RSW",74],["FLL",68],["SUA",67],["SRQ",63],["BOS",61],
+      ["TUS",61],["SAN",56],["MMSL",56],["SAT",53],["SJC",53],["TPA",53],
+      ["VRB",52],["BJC",52],["BFI",50],["FRG",50],["MMSD",49],["MMU",49],
+      ["SBA",49],["ORL",48],
     ],
     top_routes: [
-      ["TEB","BED",9],["ASE","BCT",9],["ASE","TEB",9],["ASE","OPF",8],
-      ["BED","TEB",7],["TEB","MYNN",7],["TEB","PBI",7],["VNY","BZN",7],
-      ["TEB","VNY",6],["TEB","HPN",6],["OPF","HPN",6],["VNY","BNA",6],
-      ["MYNN","TEB",6],["OPF","APF",6],["TEB","BCT",6],["BCT","PBI",6],
-      ["PBI","TEB",6],["HPN","TEB",6],["APF","BED",6],["BNA","VNY",6],
-      ["RGK","STP",5],["SDL","LAS",5],["PBI","IAD",5],["BCT","BED",5],
-      ["MDW","EGE",5],["HOU","AUS",5],["PHL","VRB",5],["BCT","VRB",5],
-      ["VRB","PHL",5],["JAC","TEB",5],["OPF","SRQ",5],["TEB","ASE",5],
-      ["TEB","OPF",5],["OPF","BCT",5],["EGE","TEB",5],["BCT","RIL",5],
+      ["ASE","TEB",9],["ASE","BCT",9],["TEB","BED",8],["BED","TEB",8],
+      ["TEB","MYNN",7],["TEB","BCT",7],["VNY","BZN",7],["ASE","OPF",7],
+      ["TEB","VNY",7],["VNY","BNA",6],["APF","BED",6],["HPN","TEB",6],
+      ["PBI","TEB",6],["TEB","HPN",6],["OPF","HPN",6],["BCT","PBI",6],
+      ["OPF","APF",6],["RGK","STP",6],["BNA","VNY",5],["VRB","PHL",5],
+      ["HOU","AUS",5],["OPF","BCT",5],["PHL","VRB",5],["JAC","TEB",5],
+      ["BCT","VRB",5],["OPF","SRQ",5],["TEB","ASE",5],["BCT","BED",5],
+      ["BOS","BED",5],["TEB","PBI",5],["BCT","RIL",5],["MDW","EGE",5],
+      ["EGE","TEB",5],["MYNN","OPF",4],["SDL","LAS",4],["LAS","SDL",4],
     ],
     // pic_stats intentionally omitted — public-facing calculator
     // doesn't surface per-pilot block-time data.
