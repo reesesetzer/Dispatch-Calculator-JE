@@ -484,7 +484,7 @@
 <nav class="tabs">
   <button class="active" data-tab="payload">Max Payload</button>
   <button data-tab="nonstop">Nonstop Feasibility</button>
-  <button data-tab="runway">Runway &amp; OAT</button>
+  <button data-tab="runway">Takeoff Performance</button>
   <button data-tab="gate">Pre-Flight Gate</button>
   <button data-tab="tailfind">Tail Finder</button>
   <button data-tab="activity">Fleet Activity</button>
@@ -680,8 +680,8 @@
   <!-- ─────────────────────────────────────────────────────── -->
   <section id="tab-runway" class="tab-pane">
     <div class="page-heading">
-      <h2>Runway &amp; Critical OAT</h2>
-      <p>Required balanced field length at planned takeoff weight &nbsp;·&nbsp; critical OAT (where BFL = available runway)</p>
+      <h2>Takeoff Performance</h2>
+      <p>Balanced field length at planned takeoff weight &nbsp;·&nbsp; critical OAT (the temp where BFL = available runway)</p>
     </div>
 
     <div class="calc-grid single">
@@ -2198,7 +2198,7 @@
     const oat = document.getElementById('rw-oat').value;
     const result = document.getElementById('rw-result');
     const verdict = result.querySelector('.status-badge')?.textContent || "(no verdict)";
-    return `*Runway & Critical OAT — ${tail || '?'} @ ${apt}*\n`
+    return `*Takeoff Performance — ${tail || '?'} @ ${apt}*\n`
          + `Elev ${elev} ft · TODA ${toda} ft · TOW ${tow || 'MTOW'} lbs · OAT ${oat}°F\n`
          + `Verdict: ${verdict.trim()}`;
   }

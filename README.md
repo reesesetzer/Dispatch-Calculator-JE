@@ -32,7 +32,7 @@ ships inlined; the app works from `file://` once loaded.
    inlined airport DB; cruise winds are pulled live from Open-Meteo
    when ETD is within the 7-day forecast window.
 
-3. **Runway & OAT** — given tail, airport, available runway, planned
+3. **Takeoff Performance** — given tail, airport, available runway, planned
    takeoff weight (or MTOW), and OAT, returns weight-adjusted balanced
    field length plus the **critical OAT** — the exact temperature where
    BFL equals the available runway. Live OAT button hits Open-Meteo.
@@ -96,7 +96,7 @@ Selecting a tail or burn-rate scenario anywhere persists it via
 
 | Endpoint | Used for | Refresh |
 | -------- | -------- | ------- |
-| `api.open-meteo.com/v1/forecast?hourly=temperature_2m` | Runway/OAT live OAT lookup | per-airport, per-ETD |
+| `api.open-meteo.com/v1/forecast?hourly=temperature_2m` | Takeoff Performance live OAT lookup | per-airport, per-ETD |
 | `api.open-meteo.com/v1/forecast?hourly=wind_speed_<hPa>hPa,wind_direction_<hPa>hPa` | Nonstop wind correction at selected FL | per-route, sampled at 3 great-circle points |
 
 Open-Meteo is free, requires no auth, and is CORS-friendly.
