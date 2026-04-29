@@ -1433,7 +1433,10 @@
   // and re-baked from CSV updates. Tails not in this dict fall back to
   // fleet-wide visit count, which is conservative.)
 
-  const VISIT_THRESHOLD = 3;
+  // Trigger threshold: only fire when fleet has NEVER been there (n_fleet == 0).
+  // Tightened per Reese: "the only time I want it noted is if we have NEVER
+  // visited there." A single prior visit = enough institutional knowledge.
+  const VISIT_THRESHOLD = 1;
 
   // MX-placeholder airports JE puts into the schedule for reasons unrelated
   // to actual ops (e.g. VTBD = maintenance placeholder). Suppressed from
@@ -1495,16 +1498,9 @@
     const codeU = code.toUpperCase().trim();
     if (EXCLUDED_AIRPORTS.has(codeU) || KNOWN_GOOD_AIRPORTS.has(codeU)) return null;
     const n_fleet = getFleetVisitCount(code);
-    if (n_fleet >= VISIT_THRESHOLD) return null;
+    if (n_fleet >= VISIT_THRESHOLD) return null;   // >=1 means we've been there
     const win_str = `${VISIT_DATA.window[0]} to ${VISIT_DATA.window[1]}`;
-    let history;
-    if (n_fleet === 0) {
-      history = `First-time field for the fleet (no ops in ${win_str}).`;
-    } else {
-      const f_suffix = n_fleet === 1 ? 'visit' : 'visits';
-      history = `Low-frequency field (${n_fleet} fleet ${f_suffix} in ${win_str}).`;
-    }
-    return `${history} ${FBO_CALL_CHECKLIST}`;
+    return `First-time field for the fleet (no ops in ${win_str}). ${FBO_CALL_CHECKLIST}`;
   }
 
   // ═════════════════════════════════════════════════════════════
