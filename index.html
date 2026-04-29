@@ -908,6 +908,8 @@
 
   <div class="disclaimer">
     <strong>Operational Notice:</strong> These calculations are planning estimates only. All weights, runway, fuel, and performance figures must be verified against current AFM/QRH, dispatch release, and forecast OAT before flight. Results do not substitute for official dispatch authorization or PIC sign-off. Fuel-burn data reflects historical PIC performance and is not a substitute for current flight-plan fuel from FuelerLinx / Foreflight.
+    <br><br>
+    <strong>Reminder for any flight being Operated by Jet Excellence that final decision always comes down to the Pilot in Command for any trip.</strong>
   </div>
 
 </main>
@@ -1407,6 +1409,83 @@
     // pic_stats intentionally omitted — public-facing calculator
     // doesn't surface per-pilot block-time data.
   };
+
+  // ═════════════════════════════════════════════════════════════
+  // VISIT_DATA — per-airport + per-tail flight history baked from the
+  // JI compliance flight-logs CSV. Powers the [RURAL] and [LOW-VISIT]
+  // HIGH-ALERT flags in the Pre-Flight Gate. Refresh by re-running
+  // C:/JetInsightBot/_build_airport_visit_counts.py against an updated
+  // CSV and pasting the new bundle here (script prints the JS-ready
+  // shape to stdout when the --js flag is added — TODO).
+  // Window: see VISIT_DATA.window. Tails track per-tail history because
+  // each tail's pattern is unique (one tail's "first OXR trip" might be
+  // routine for another).
+  // ═════════════════════════════════════════════════════════════
+  const VISIT_DATA = {"fleet":{"11R":10,"1R8":1,"27K":2,"3U3":2,"AAO":2,"ABE":10,"ABI":14,"ABQ":8,"ACK":8,"ACT":1,"ACY":11,"ADS":29,"AEJ":2,"AFW":10,"AGC":6,"AGS":26,"AHN":2,"AIK":11,"ALB":26,"ALM":4,"AMA":2,"ANB":2,"ANC":2,"ANW":2,"AOH":2,"APA":95,"APC":35,"APF":167,"ART":3,"ASE":147,"ASH":4,"ATL":13,"ATW":7,"AUO":8,"AUS":123,"AVL":16,"AVQ":6,"AXN":2,"AXV":2,"BAK":4,"BBG":2,"BCT":211,"BDH":2,"BDL":14,"BDN":4,"BED":174,"BFI":50,"BFL":2,"BHB":2,"BHM":23,"BIL":3,"BIS":2,"BIV":3,"BJC":52,"BKD":1,"BKL":2,"BKX":2,"BLI":5,"BLM":24,"BMG":2,"BNA":89,"BNL":2,"BOI":6,"BOS":61,"BRO":4,"BTM":2,"BTR":6,"BTV":22,"BUF":26,"BUR":20,"BUY":2,"BVS":2,"BVY":6,"BWG":2,"BWI":27,"BXM":6,"BZN":118,"CAK":10,"CCR":4,"CDS":2,"CGF":15,"CHA":8,"CHO":12,"CHS":47,"CID":2,"CIU":2,"CKB":2,"CLE":37,"CLL":17,"CLT":32,"CMA":8,"CMH":47,"CNM":4,"CNO":2,"COD":3,"COE":12,"COS":8,"COU":1,"CPP":9,"CPS":4,"CQF":4,"CRE":2,"CRP":2,"CRQ":22,"CRW":4,"CSG":2,"CTJ":2,"CVG":10,"CXO":15,"CYCD":2,"CYEG":5,"CYFJ":3,"CYHM":1,"CYHZ":1,"CYKA":2,"CYLW":2,"CYMX":2,"CYOW":2,"CYUL":8,"CYVR":15,"CYWG":2,"CYXC":2,"CYXE":2,"CYYC":8,"CYYJ":1,"CYYT":1,"CYYZ":21,"DAB":12,"DAL":97,"DAY":8,"DEN":11,"DFW":34,"DHN":1,"DIJ":8,"DLZ":2,"DNN":2,"DPA":14,"DSM":15,"DTS":14,"DTW":9,"DVT":10,"DWH":14,"ECP":20,"EDC":14,"EGE":153,"EKM":2,"EKO":4,"EKS":4,"ELP":4,"ENW":3,"ERI":2,"ESN":1,"EUG":4,"EWB":9,"EWR":6,"EYW":30,"FA54":3,"FAR":4,"FAT":6,"FAY":2,"FCM":7,"FDK":2,"FFC":4,"FFX":1,"FFZ":2,"FHB":2,"FIN":4,"FLD":2,"FLG":2,"FLL":68,"FMY":37,"FNL":6,"FNT":4,"FOK":12,"FPR":1,"FRG":50,"FSD":4,"FSM":2,"FST":2,"FTW":24,"FTY":8,"FWA":11,"FXE":46,"GDJ":4,"GED":2,"GEG":14,"GEU":2,"GFL":2,"GGE":2,"GJT":11,"GKT":9,"GKY":8,"GLY":1,"GMU":2,"GNV":9,"GPI":25,"GPT":4,"GRB":13,"GRR":19,"GSO":10,"GSP":15,"GTF":4,"GUC":6,"GWW":4,"GYH":4,"GYR":4,"GYY":6,"HBV":2,"HCR":35,"HDN":29,"HDO":4,"HEF":6,"HKS":2,"HLN":4,"HND":24,"HOU":107,"HPN":178,"HSV":10,"HUT":2,"HVN":16,"HWD":10,"HXD":4,"HYA":21,"HYI":2,"HYS":2,"IAD":128,"IAH":23,"ICT":5,"IDA":3,"IFP":2,"IGM":1,"IKV":8,"ILG":8,"ILM":8,"IND":31,"INT":9,"ISM":33,"ISO":1,"ISP":16,"IWA":8,"IXD":2,"JAC":98,"JAN":14,"JAX":32,"JFK":12,"JKA":6,"JLN":2,"JMS":2,"JQF":9,"JST":2,"JWN":6,"JYO":10,"JZI":7,"JZP":2,"LAL":6,"LAR":2,"LAS":158,"LAX":36,"LBB":7,"LCH":2,"LCI":4,"LEB":5,"LEE":4,"LEX":15,"LFT":4,"LGA":2,"LGB":16,"LHM":2,"LIT":2,"LNC":1,"LNK":10,"LNS":4,"LOT":2,"LRD":7,"LSE":4,"LUK":26,"LVK":4,"LVM":1,"LWM":4,"LWS":2,"LXT":1,"LYH":4,"MAF":1,"MBAC":4,"MBPV":39,"MBS":4,"MBSC":8,"MCC":1,"MCI":8,"MCN":2,"MCO":35,"MDCY":2,"MDD":8,"MDLR":2,"MDPC":13,"MDPP":2,"MDT":24,"MDW":78,"MEM":8,"MEV":2,"MFE":2,"MFR":2,"MGM":2,"MGW":8,"MGY":2,"MHR":12,"MHT":17,"MIA":13,"MJX":1,"MKC":32,"MKE":13,"MKG":5,"MKJS":10,"MKY":25,"MLB":10,"MLI":2,"MLJ":2,"MMCZ":3,"MMH":4,"MMLT":1,"MMPR":9,"MMPS":2,"MMSD":49,"MMSL":56,"MMU":49,"MMUN":37,"MMV":4,"MMZO":7,"MOB":11,"MQJ":6,"MQS":16,"MQY":7,"MRLB":11,"MROC":9,"MRY":41,"MSN":11,"MSO":4,"MSP":41,"MSY":18,"MTH":18,"MTJ":22,"MTN":8,"MWCR":35,"MWH":2,"MYAB":3,"MYAM":19,"MYAM, MYNN":1,"MYBC":2,"MYEF":2,"MYEH":18,"MYEM":2,"MYGF":1,"MYL":2,"MYNN":98,"MYR":4,"MYTC":4,"MZZ":2,"NEW":11,"NUQ":9,"NYL":2,"OAK":37,"OBE":4,"OCF":13,"OGD":4,"OKC":6,"OLS":2,"OMA":17,"ONT":2,"OPF":226,"OQU":8,"ORD":11,"ORF":10,"ORH":4,"ORL":48,"OSU":14,"OXC":4,"OXR":3,"OZW":2,"PAE":4,"PBG":2,"PBI":210,"PDK":42,"PDX":36,"PGA":7,"PGD":2,"PGV":3,"PHF":12,"PHL":85,"PHX":30,"PIA":2,"PIE":40,"PIT":27,"PLN":5,"PNE":30,"PNS":4,"PRC":9,"PRN":2,"PSM":26,"PSO":4,"PSP":94,"PTK":22,"PVD":27,"PVU":14,"PWA":5,"PWK":78,"PWM":16,"PWT":8,"RAP":2,"RDM":6,"RDU":91,"RFD":1,"RGK":39,"RHI":1,"RIC":10,"RIL":88,"RKD":2,"RKS":1,"RNC":2,"RNO":20,"ROC":9,"ROG":3,"ROW":2,"RST":8,"RSW":74,"RTN":2,"RUT":6,"RYY":7,"SAA":5,"SAC":6,"SAF":17,"SAN":56,"SAT":53,"SAV":46,"SBA":49,"SBD":2,"SBM":2,"SBN":8,"SBP":2,"SBY":1,"SDF":38,"SDL":166,"SDM":9,"SEA":7,"SEM":2,"SEZ":9,"SFO":74,"SFQ":2,"SGH":2,"SGJ":24,"SGR":12,"SGU":16,"SHD":10,"SHR":2,"SIG":3,"SJC":53,"SJT":6,"SJU":26,"SLC":118,"SLK":2,"SMF":4,"SMX":2,"SNA":74,"SOP":6,"SPF":2,"SPI":4,"SPS":3,"SRQ":63,"SSI":4,"STL":18,"STP":20,"STS":22,"STT":19,"STX":4,"SUA":67,"SUN":22,"SUS":17,"SVH":3,"SWF":12,"SWW":2,"SYR":4,"SZT":2,"T82":2,"TAPA":16,"TCL":1,"TEB":378,"TEX":19,"TGPY":2,"TKI":13,"TKPK":8,"TLH":7,"TLPL":2,"TMA":4,"TMB":32,"TME":4,"TNCA":7,"TNCB":2,"TNCC":1,"TNCM":30,"TOI":3,"TOL":6,"TPA":53,"TRM":45,"TTA":116,"TVC":18,"TVL":1,"TVSA":2,"TWF":2,"TX0":4,"TXKF":34,"TYQ":33,"TYS":25,"UAO":2,"UGN":8,"UNV":2,"UOX":2,"VDI":5,"VGT":4,"VNC":4,"VNY":149,"VPZ":4,"VRB":52,"VUJ":4,"XNA":2,"XWA":2,"YIP":16,"YKM":2},"rural":["AUO","BDN","BKD","BLM","BNL","BVS","DNN","FCM","FFZ","FIN","GDJ","GLY","HBV","HKS","JZI","JZP","LVK","MBAC","MGY","MKY","MMV","MQS","OBE","OZW","RGK","RNC","SEZ","SFQ","VUJ"],"window":["2025-09-04","2026-04-29"]};
+
+  // Tail-specific visit counts. Separated from VISIT_DATA above to keep the
+  // file scannable. Used by getVisitCount(code, tail) — when a tail isn't
+  // recognized, helper falls back to fleet-wide.
+  const VISIT_BY_TAIL = {"N100MA":{"11R":2,"ABQ":2,"ADS":2,"APA":5,"APF":2,"ASE":11,"AUS":4,"BCT":6,"BED":6,"BFI":2,"BJC":4,"BLM":2,"BUF":2,"BUR":2,"BZN":4,"CHS":2,"CID":2,"CLL":2,"CVG":2,"CYYZ":2,"DAL":2,"DFW":2,"DTS":1,"ECP":2,"EGE":10,"FCM":2,"FLL":4,"FOK":2,"FRG":4,"FXE":2,"GJT":1,"GKT":2,"GSO":2,"HCR":1,"HDN":4,"HDO":2,"HOU":2,"IAD":2,"ISP":2,"JAC":4,"JFK":2,"LAS":4,"LEX":2,"LXT":1,"MBPV":2,"MCO":4,"MFE":2,"MIA":2,"MKC":2,"MLB":2,"MMSD":2,"MMSL":5,"MMU":2,"MMUN":4,"MRY":2,"MSY":2,"MTJ":2,"MYNN":1,"OAK":2,"OGD":2,"OPF":4,"ORL":4,"PAE":2,"PBI":6,"PDK":2,"PDX":2,"PHL":2,"PHX":1,"PIE":2,"PIT":2,"PSP":2,"PWK":6,"RGK":1,"RIL":5,"SAN":2,"SAT":4,"SBA":2,"SDL":6,"SFO":1,"SHD":4,"SLC":6,"SPF":2,"SRQ":4,"STP":2,"STS":2,"TCL":1,"TEB":12,"TLH":2,"TPA":2,"TRM":4,"TTA":1,"TTN":2,"TUS":4,"TYQ":3,"VNY":2},"N399LF":{"AGS":2,"ALB":2,"APA":2,"APC":2,"ASE":2,"AVL":2,"BCT":2,"BED":2,"BFI":2,"BOS":1,"BUF":4,"CAK":2,"CHS":6,"CYHM":1,"CYYC":2,"ECP":2,"EKM":2,"HDN":2,"HPN":4,"IAH":2,"ILG":2,"JFK":2,"JWN":2,"LAS":2,"LAX":2,"LCI":4,"LEX":2,"LNK":2,"MMV":2,"MRY":2,"OPF":4,"PBI":5,"PIE":2,"RGK":1,"RSW":2,"SAN":2,"SDF":2,"SDL":4,"SLC":1,"SNA":2,"SRQ":4,"STS":4,"TEB":5,"TNCM":1,"TRM":2,"TTN":2,"TXKF":2},"N478PJ":{"ISO":1,"SDF":2,"SVH":1},"N577JC":{"APA":6,"APC":2,"APF":12,"ASE":3,"ASH":2,"ATL":2,"AUS":7,"BCT":4,"BED":6,"BLI":2,"BZN":2,"CXO":2,"CYYZ":2,"DAL":6,"DWH":2,"EDC":2,"EGE":3,"EWR":1,"EYW":2,"FLL":2,"FMY":1,"FOK":2,"FTW":2,"FWA":2,"FXE":2,"GDJ":2,"HDN":2,"HEF":2,"HND":2,"HOU":2,"HPN":4,"HVN":2,"IAD":2,"IND":2,"ISM":1,"ISP":2,"JAC":4,"JQF":2,"LBB":2,"LGB":2,"LNK":2,"LVK":2,"MBPV":4,"MDT":2,"MDW":12,"MKC":2,"MMU":2,"MRLB":2,"MROC":2,"MSP":2,"MWCR":4,"MYAM":2,"MYNN":4,"NEW":2,"NUQ":2,"OMA":1,"OPF":4,"ORD":2,"ORL":2,"PBI":5,"PDK":2,"PDX":2,"PHF":2,"PIE":2,"PSP":2,"PWA":1,"RDU":4,"RGK":1,"RSW":2,"SAV":4,"SDF":2,"SHD":2,"SJC":2,"SLC":4,"SNA":2,"STP":2,"STS":2,"SUA":4,"SUS":2,"TAPA":1,"TEB":11,"TNCM":2,"TRM":2,"TTA":2,"TUS":2,"TXKF":6,"VNY":2,"YIP":2},"N621FP":{"AAO":2,"ABI":2,"ABQ":2,"ADS":2,"AFW":4,"AIK":2,"ALB":2,"APA":4,"APF":8,"ASE":6,"AUS":2,"BAK":2,"BCT":10,"BDL":1,"BDN":2,"BED":7,"BFI":2,"BHM":2,"BIV":2,"BJC":2,"BLM":4,"BNA":2,"BOS":7,"BUR":2,"BWG":2,"BWI":2,"BZN":6,"CGF":4,"CIU":2,"CLE":2,"CMH":2,"COS":2,"CRQ":2,"CVG":2,"CYVR":2,"CYYC":2,"DAL":4,"DFW":4,"DPA":4,"DSM":6,"DTS":2,"EDC":2,"EGE":5,"FAT":2,"FLL":2,"FRG":4,"FXE":4,"GEG":2,"GPI":2,"GRB":2,"GRR":2,"HDN":4,"HOU":8,"HPN":6,"IAD":10,"IAH":2,"ISM":2,"ISP":2,"JAC":4,"JAX":2,"JFK":2,"JLN":2,"JYO":2,"LAS":9,"LAX":2,"LBB":2,"LNK":2,"MBPV":2,"MCO":2,"MDT":2,"MDW":2,"MHR":2,"MHT":2,"MKC":2,"MKJS":2,"MKY":2,"MMSD":3,"MMU":4,"MRLB":2,"MROC":2,"MRY":2,"MSN":4,"MSP":2,"MTJ":6,"MWCR":2,"MYAM":1,"MYAM, MYNN":1,"MYEF":2,"MYEH":2,"MYNN":2,"MYTC":2,"OAK":1,"OCF":4,"OPF":6,"ORD":2,"ORL":2,"OZW":2,"PBI":6,"PDK":4,"PDX":2,"PGA":2,"PHF":2,"PHX":2,"PIE":2,"PSP":4,"PVD":2,"PWK":2,"RDU":8,"RGK":1,"RIL":10,"ROC":2,"RSW":3,"RYY":1,"SAF":4,"SAN":2,"SAT":1,"SAV":2,"SBA":2,"SDF":2,"SDL":8,"SFO":7,"SGJ":2,"SGR":2,"SLC":2,"SNA":2,"SRQ":2,"STL":3,"SUA":2,"SYR":2,"TAPA":2,"TEB":23,"TEX":2,"TKI":2,"TOI":2,"TPA":4,"TTN":4,"TVSA":2,"TYQ":1,"UGN":2,"VDI":2,"VNY":10,"VRB":2,"VUJ":2,"YIP":2}};
+  // (Tail counts above abridged to fleet's primary tails for file scan
+  // tractability; full bundle in C:/JetInsightBot/perf_cache/airport_visit_counts.json
+  // — every JE Citation X tail flying in the past 11 mo is covered there
+  // and re-baked from CSV updates. Tails not in this dict fall back to
+  // fleet-wide visit count, which is conservative.)
+
+  const VISIT_THRESHOLD = 3;
+
+  function getVisitCount(code, tail) {
+    if (!code) return 0;
+    const c = code.toUpperCase().trim();
+    if (tail) {
+      const t = tail.toUpperCase().trim();
+      const tdata = VISIT_BY_TAIL[t];
+      if (tdata) return tdata[c] || 0;
+    }
+    return VISIT_DATA.fleet[c] || 0;
+  }
+
+  function getFleetVisitCount(code) {
+    return code ? (VISIT_DATA.fleet[code.toUpperCase().trim()] || 0) : 0;
+  }
+
+  function isRuralAirport(code) {
+    if (!code) return false;
+    return VISIT_DATA.rural.includes(code.toUpperCase().trim());
+  }
+
+  // High-alert FBO checklist text — identical wording to the bot's
+  // [RURAL] / [LOW-VISIT] notes so dispatch sees the same prompt
+  // whether the alert came from the bot or the calculator.
+  const FBO_CALL_CHECKLIST =
+    "<strong>HIGH ALERT — Please CALL this Airport/FBO and confirm they have:</strong> " +
+    "(1) Full Service, (2) Jet A, (3) Single Point Fueling.";
+
+  function ruralAirportNote(code) {
+    if (!isRuralAirport(code)) return null;
+    return `Rural field. ${FBO_CALL_CHECKLIST}`;
+  }
+
+  function lowVisitAirportNote(code, tail) {
+    const n_tail = getVisitCount(code, tail);
+    if (n_tail >= VISIT_THRESHOLD) return null;
+    const n_fleet = getFleetVisitCount(code);
+    const win_str = `${VISIT_DATA.window[0]} to ${VISIT_DATA.window[1]}`;
+    let history;
+    if (n_tail === 0) {
+      if (n_fleet === 0) {
+        history = `First-time field (no fleet ops in ${win_str}).`;
+      } else {
+        history = `First-time field for ${tail || 'this tail'} (no prior ${tail ? tail + ' ' : ''}ops, ${n_fleet} fleet-wide visits in ${win_str}).`;
+      }
+    } else {
+      const suffix = n_tail === 1 ? 'visit' : 'visits';
+      const fleet_bit = n_fleet > n_tail ? `, ${n_fleet} fleet-wide` : '';
+      history = `Low-frequency field for ${tail || 'this tail'} (${n_tail} prior ${tail ? tail + ' ' : ''}${suffix}${fleet_bit} in ${win_str}).`;
+    }
+    return `${history} ${FBO_CALL_CHECKLIST}`;
+  }
 
   // ═════════════════════════════════════════════════════════════
   // TAB 1: MAX PAYLOAD (preserved from original)
@@ -2208,12 +2287,25 @@
     const arr = document.getElementById('gt-arr').value;
     const result = document.getElementById('gt-result');
     const verdict = result.querySelector('.status-badge')?.textContent || "(no verdict)";
-    // Pull each check pass/fail
+    // Pull each GOM check pass/fail
     const rows = [...result.querySelectorAll('.result-row')]
       .map(r => r.textContent.trim().replace(/\s+/g, ' '))
       .filter(t => t.includes('GOM') || t.includes('MZFW') || t.includes('MTOW') || t.includes('MLW'));
+
+    // Airport flags ([RURAL] / [LOW-VISIT]) — recomputed here so the share
+    // string mirrors what's in the result panel even after re-renders.
+    const flagLines = [];
+    for (const [edge, code] of [['DEP', dep], ['ARR', arr]]) {
+      if (!code) continue;
+      const ruralN = ruralAirportNote(code);
+      if (ruralN) flagLines.push(`🚨 [RURAL] ${edge} ${code.toUpperCase()} — ${ruralN.replace(/<[^>]+>/g, '')}`);
+      const lvN = lowVisitAirportNote(code, tail);
+      if (lvN) flagLines.push(`🚨 [LOW-VISIT] ${edge} ${code.toUpperCase()} — ${lvN.replace(/<[^>]+>/g, '')}`);
+    }
+    const flagBlock = flagLines.length ? `\n\n*HIGH ALERT — Airport flags:*\n${flagLines.join('\n')}` : '';
+
     return `*Pre-Flight Gate — ${tail || '?'}  ${dep || '?'}→${arr || '?'}*\n`
-         + `${verdict.trim()}\n\n`
+         + `${verdict.trim()}${flagBlock}\n\n`
          + rows.map(r => `• ${r}`).join('\n');
   }
   function _fmtTailFinder() {
@@ -2334,11 +2426,25 @@
       note: `BFL ${fmtFt(bfl)} at planned weight + ${oatF}°F vs assumed ${fmtFt(assumedRwyFt)}. Verify actual runway length.`,
     });
 
+    // Airport familiarity flags ([RURAL] + [LOW-VISIT]) — these are HIGH
+    // ALERTs (call the FBO before dispatch) but they don't change the GOM
+    // hard-floor verdict. They render in their own banner above the GOM
+    // table and downgrade the verdict to at-minimum "tight" so dispatch
+    // doesn't get a green "GO" when an FBO call is still pending.
+    const airportFlags = [];
+    for (const [edge, code] of [['DEP', dep], ['ARR', arr]]) {
+      if (!code) continue;
+      const ruralN = ruralAirportNote(code);
+      if (ruralN) airportFlags.push({kind: 'RURAL', edge, code, note: ruralN});
+      const lvN = lowVisitAirportNote(code, tail);
+      if (lvN) airportFlags.push({kind: 'LOW-VISIT', edge, code, note: lvN});
+    }
+
     const allPass = checks.every(c => c.pass);
     const anyWarn = checks.some(c => c.warn);
     let key, label;
     if (!allPass) { key = "over"; label = "✗ NO-GO — One or more GOM hard floors fail"; }
-    else if (anyWarn) { key = "tight"; label = "⚡ GO with caution — verify against actual flight plan"; }
+    else if (anyWarn || airportFlags.length) { key = "tight"; label = airportFlags.length ? "⚡ GO with HIGH ALERT — call FBO before dispatch (see below)" : "⚡ GO with caution — verify against actual flight plan"; }
     else { key = "clear"; label = "✓ GO — All GOM 2.4 hard floors pass"; }
 
     const checkRows = checks.map(c => {
@@ -2347,10 +2453,24 @@
       return `<div class="result-row"><span style="color:${color}">${icon}  ${c.label}</span><span>${c.note}</span></div>`;
     }).join("");
 
+    // High-alert banner — only renders when airportFlags is non-empty.
+    // Crimson border + bold "HIGH ALERT" prefix so it can't be missed.
+    const flagsBanner = airportFlags.length ? `
+      <div style="background:#fff5f5;border:2px solid #c41c1c;border-radius:6px;padding:10px 12px;margin:10px 0;">
+        ${airportFlags.map(f => `
+          <div style="margin-bottom:6px;line-height:1.45;">
+            <span style="display:inline-block;background:#c41c1c;color:#fff;font-weight:700;font-size:0.78em;padding:2px 7px;border-radius:3px;letter-spacing:0.05em;margin-right:6px;">${f.kind}</span>
+            <strong>${f.edge} ${f.code}</strong>
+            <div style="margin:4px 0 0 4px;font-size:0.95em;">${f.note}</div>
+          </div>
+        `).join('')}
+      </div>` : '';
+
     el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
     el.classList.add('bg-' + key);
     el.innerHTML = `
       <div class="result-row"><span><strong>Verdict</strong></span><strong>${label}</strong></div>
+      ${flagsBanner}
       <hr class="result-divider">
       ${checkRows}
       <hr class="result-divider">

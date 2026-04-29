@@ -41,6 +41,11 @@ ships inlined; the app works from `file://` once loaded.
    floors at once: range, fuel capacity (with wind correction), MZFW,
    MTOW, MLW, and runway BFL at planned weight + DEP OAT. Outputs
    ✓ GO / ⚡ GO with caution / ✗ NO-GO with per-check rationale.
+   **`[RURAL]` and `[LOW-VISIT]` airport flags** also surface here
+   when DEP or ARR is a rural field or one this tail has flown to <3
+   times in the last 11 mo — both render as HIGH ALERTs prompting a
+   call to the FBO to confirm Full Service / Jet A / Single Point
+   Fueling. Triggering a flag forces verdict to "GO with HIGH ALERT".
 
 5. **Tail Finder** — given route + payload + fuel, ranks fleet tails by
    which fits best (passes range, MZFW, MTOW, fuel-capacity). Failure
