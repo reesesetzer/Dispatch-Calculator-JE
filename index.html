@@ -1440,6 +1440,11 @@
   // [RURAL] / [LOW-VISIT] flags so they don't fire forever.
   const EXCLUDED_AIRPORTS = new Set(["VTBD"]);
 
+  // Airports the team has confirmed are operationally fine even when fleet
+  // visit count < 3. Add codes here as you teach the model. Functionally
+  // identical to EXCLUDED_AIRPORTS but kept separate for documentation.
+  const KNOWN_GOOD_AIRPORTS = new Set(["CEU", "FDK", "LXT"]);
+
   function getVisitCount(code, tail) {
     if (!code) return 0;
     const c = code.toUpperCase().trim();
@@ -1475,7 +1480,8 @@
     //      prompt would be redundant. Other concerns (runway-min, etc.)
     //      still fire from their own evaluators.
     if (!isRuralAirport(code)) return null;
-    if (EXCLUDED_AIRPORTS.has(code.toUpperCase().trim())) return null;
+    const codeU = code.toUpperCase().trim();
+    if (EXCLUDED_AIRPORTS.has(codeU) || KNOWN_GOOD_AIRPORTS.has(codeU)) return null;
     if (getFleetVisitCount(code) >= VISIT_THRESHOLD) return null;
     return `Rural field. ${FBO_CALL_CHECKLIST}`;
   }
@@ -1486,7 +1492,8 @@
     // there, not tail specific." The `tail` parameter is accepted for
     // API parity but intentionally unused in the rendered note.
     if (!code) return null;
-    if (EXCLUDED_AIRPORTS.has(code.toUpperCase().trim())) return null;
+    const codeU = code.toUpperCase().trim();
+    if (EXCLUDED_AIRPORTS.has(codeU) || KNOWN_GOOD_AIRPORTS.has(codeU)) return null;
     const n_fleet = getFleetVisitCount(code);
     if (n_fleet >= VISIT_THRESHOLD) return null;
     const win_str = `${VISIT_DATA.window[0]} to ${VISIT_DATA.window[1]}`;
@@ -2311,9 +2318,9 @@
     for (const [edge, code] of [['DEP', dep], ['ARR', arr]]) {
       if (!code) continue;
       const ruralN = ruralAirportNote(code);
-      if (ruralN) flagLines.push(`🚨 [RURAL] ${edge} ${code.toUpperCase()} — ${ruralN.replace(/<[^>]+>/g, '')}`);
+      if (ruralN) flagLines.push(`🟠 [RURAL] ${edge} ${code.toUpperCase()} — ${ruralN.replace(/<[^>]+>/g, '')}`);
       const lvN = lowVisitAirportNote(code, tail);
-      if (lvN) flagLines.push(`🚨 [LOW-VISIT] ${edge} ${code.toUpperCase()} — ${lvN.replace(/<[^>]+>/g, '')}`);
+      if (lvN) flagLines.push(`🟠 [LOW-VISIT] ${edge} ${code.toUpperCase()} — ${lvN.replace(/<[^>]+>/g, '')}`);
     }
     const flagBlock = flagLines.length ? `\n\n*HIGH ALERT — Airport flags:*\n${flagLines.join('\n')}` : '';
 
@@ -2467,12 +2474,15 @@
     }).join("");
 
     // High-alert banner — only renders when airportFlags is non-empty.
-    // Crimson border + bold "HIGH ALERT" prefix so it can't be missed.
+    // Orange (not red/yellow) so [RURAL] / [LOW-VISIT] are visually
+    // distinct from NO-GO red severity rows and YELLOW caution items
+    // elsewhere on the panel. "HIGH ALERT" prefix in the note text
+    // keeps the urgency cue.
     const flagsBanner = airportFlags.length ? `
-      <div style="background:#fff5f5;border:2px solid #c41c1c;border-radius:6px;padding:10px 12px;margin:10px 0;">
+      <div style="background:#fff8f0;border:2px solid #e65100;border-radius:6px;padding:10px 12px;margin:10px 0;">
         ${airportFlags.map(f => `
           <div style="margin-bottom:6px;line-height:1.45;">
-            <span style="display:inline-block;background:#c41c1c;color:#fff;font-weight:700;font-size:0.78em;padding:2px 7px;border-radius:3px;letter-spacing:0.05em;margin-right:6px;">${f.kind}</span>
+            <span style="display:inline-block;background:#e65100;color:#fff;font-weight:700;font-size:0.78em;padding:2px 7px;border-radius:3px;letter-spacing:0.05em;margin-right:6px;">${f.kind}</span>
             <strong>${f.edge} ${f.code}</strong>
             <div style="margin:4px 0 0 4px;font-size:0.95em;">${f.note}</div>
           </div>
