@@ -2,7 +2,7 @@
 
 A single-file public-facing web app for Citation X dispatch planning.
 
-**Live:** [`max-payload-calculator-je.netlify.app`](https://max-payload-calculator-je.netlify.app/)
+**Live:** [`dispatch-calculator-je.netlify.app`](https://dispatch-calculator-je.netlify.app/)
 
 > **Public-facing build.** No pilot names, no per-pilot burn rates, no
 > customer names. Burn-rate selection uses anonymous scenario options
@@ -130,7 +130,7 @@ This is the public-facing build:
 ## Deployment
 
 This repo is wired to Netlify continuous deploy. **Pushing to `main`
-auto-deploys** to `max-payload-calculator-je.netlify.app` within ~30s.
+auto-deploys** to `dispatch-calculator-je.netlify.app` within ~30s.
 
 For manual / one-off deploys:
 
