@@ -1475,12 +1475,12 @@
   }
 
   function lowVisitAirportNote(code, tail) {
-    // Fleet-wide threshold (matches the bot's airport_familiarity.py).
-    // Per-tail count is informational, not the trigger — per-tail thresholds
-    // generated 325 hits on 245 trips in initial testing (way too noisy).
+    // Fleet-wide threshold only (matches bot's airport_familiarity.py).
+    // Per Reese: "we just need to know if ANY of the planes have been
+    // there, not tail specific." The `tail` parameter is accepted for
+    // API parity but intentionally unused in the rendered note.
     const n_fleet = getFleetVisitCount(code);
     if (n_fleet >= VISIT_THRESHOLD) return null;
-    const n_tail = tail ? getVisitCount(code, tail) : 0;
     const win_str = `${VISIT_DATA.window[0]} to ${VISIT_DATA.window[1]}`;
     let history;
     if (n_fleet === 0) {
@@ -1488,12 +1488,6 @@
     } else {
       const f_suffix = n_fleet === 1 ? 'visit' : 'visits';
       history = `Low-frequency field (${n_fleet} fleet ${f_suffix} in ${win_str}).`;
-      if (tail && n_tail === 0) {
-        history += ` ${tail} has not been there.`;
-      } else if (tail && n_tail >= 1 && n_tail < n_fleet) {
-        const t_suffix = n_tail === 1 ? 'visit' : 'visits';
-        history += ` ${tail}: ${n_tail} prior ${t_suffix}.`;
-      }
     }
     return `${history} ${FBO_CALL_CHECKLIST}`;
   }
