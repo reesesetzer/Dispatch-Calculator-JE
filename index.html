@@ -1463,26 +1463,37 @@
     "(1) Full Service, (2) Jet A, (3) Single Point Fueling.";
 
   function ruralAirportNote(code) {
+    // Two-step gate (matches the bot's airport_familiarity.py):
+    //   1. Must be rural (small_airport with longest rwy < 5,500 ft)
+    //   2. Fleet must NOT have visited >= VISIT_THRESHOLD times — if we've
+    //      been there 3+ times we know the FBO situation; the call-FBO
+    //      prompt would be redundant. Other concerns (runway-min, etc.)
+    //      still fire from their own evaluators.
     if (!isRuralAirport(code)) return null;
+    if (getFleetVisitCount(code) >= VISIT_THRESHOLD) return null;
     return `Rural field. ${FBO_CALL_CHECKLIST}`;
   }
 
   function lowVisitAirportNote(code, tail) {
-    const n_tail = getVisitCount(code, tail);
-    if (n_tail >= VISIT_THRESHOLD) return null;
+    // Fleet-wide threshold (matches the bot's airport_familiarity.py).
+    // Per-tail count is informational, not the trigger — per-tail thresholds
+    // generated 325 hits on 245 trips in initial testing (way too noisy).
     const n_fleet = getFleetVisitCount(code);
+    if (n_fleet >= VISIT_THRESHOLD) return null;
+    const n_tail = tail ? getVisitCount(code, tail) : 0;
     const win_str = `${VISIT_DATA.window[0]} to ${VISIT_DATA.window[1]}`;
     let history;
-    if (n_tail === 0) {
-      if (n_fleet === 0) {
-        history = `First-time field (no fleet ops in ${win_str}).`;
-      } else {
-        history = `First-time field for ${tail || 'this tail'} (no prior ${tail ? tail + ' ' : ''}ops, ${n_fleet} fleet-wide visits in ${win_str}).`;
-      }
+    if (n_fleet === 0) {
+      history = `First-time field for the fleet (no ops in ${win_str}).`;
     } else {
-      const suffix = n_tail === 1 ? 'visit' : 'visits';
-      const fleet_bit = n_fleet > n_tail ? `, ${n_fleet} fleet-wide` : '';
-      history = `Low-frequency field for ${tail || 'this tail'} (${n_tail} prior ${tail ? tail + ' ' : ''}${suffix}${fleet_bit} in ${win_str}).`;
+      const f_suffix = n_fleet === 1 ? 'visit' : 'visits';
+      history = `Low-frequency field (${n_fleet} fleet ${f_suffix} in ${win_str}).`;
+      if (tail && n_tail === 0) {
+        history += ` ${tail} has not been there.`;
+      } else if (tail && n_tail >= 1 && n_tail < n_fleet) {
+        const t_suffix = n_tail === 1 ? 'visit' : 'visits';
+        history += ` ${tail}: ${n_tail} prior ${t_suffix}.`;
+      }
     }
     return `${history} ${FBO_CALL_CHECKLIST}`;
   }
