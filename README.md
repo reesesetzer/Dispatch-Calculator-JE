@@ -76,6 +76,34 @@ FL450 is the default because Citation X step-climbs above the jet stream
 core after initial fuel burn, and burn drops at higher FL. FL250 is
 included for MEL scenarios (e.g. cabin-pressure restrictions).
 
+## 📅 Calendar feed (subscribe in Outlook / Google Calendar)
+
+Flagged trips from the JE Payload Alert Bot are also published as a
+subscribable iCalendar feed:
+
+```
+https://dispatch-calculator-je.netlify.app/feed/alerts.ics
+```
+
+Refreshes every 4 hours (the bot's run cadence). One calendar event per
+flagged trip — severity (🔴 RED / 🟠 ALERT / 🟡 YELLOW), tail, route,
+ETD as the start time. Customer name and full concern body are
+**redacted** in the public feed (only concern KIND surfaces). For full
+detail, see the bot's PDF / inline messages in the Slack channel.
+
+### Subscribe in Outlook (Microsoft 365)
+1. Calendar view → **Add calendar** → **Subscribe from web**
+2. Paste the URL above
+3. Name it "JE Pre-Dispatch Alerts" → choose color → Save
+
+### Subscribe in Google Calendar
+1. Calendar settings → **Add calendar** → **From URL**
+2. Paste the URL → **Add calendar**
+
+### Subscribe in Apple Calendar
+1. File → **New Calendar Subscription**
+2. Paste the URL → set Auto-refresh to "Every hour"
+
 ## Cross-tab features
 
 ### 📋 Copy for Slack

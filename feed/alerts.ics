@@ -1,0 +1,11 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Jet Excellence//Payload Alert Bot//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:JE Pre-Dispatch Alerts
+NAME:JE Pre-Dispatch Alerts
+X-WR-CALDESC:Flagged trips from JE Payload Alert Bot. Refreshes every 4 hours from the bot. Floating times = airport-local.
+REFRESH-INTERVAL;VALUE=DURATION:PT4H
+X-PUBLISHED-TTL:PT4H
+END:VCALENDAR
