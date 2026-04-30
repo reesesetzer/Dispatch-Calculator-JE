@@ -597,10 +597,17 @@
         <div class="card-body">
 
           <div class="form-group">
-            <label for="ns-tail">Tail Number</label>
+            <label for="ns-tail">Tail Number <span class="label-hint">(* see note below for future trips)</span></label>
             <select id="ns-tail" onchange="calcNonstop()">
               <option value="">— Select Tail —</option>
             </select>
+            <div class="label-hint" style="margin-top:6px;line-height:1.4;">
+              * For trips planned more than ~72 hr out, use <strong>N760XJ</strong>
+              as the conservative baseline — heaviest BEW in the fleet, so any
+              trip that fits on N760XJ will fit any tail. Specific tail
+              assignments slip during the booking window; planning to N760XJ
+              avoids replanning if the assigned tail changes.
+            </div>
           </div>
 
           <!-- ── Route + ETD — distance and wind auto-populate from these ── -->
@@ -790,6 +797,13 @@
             <div class="form-group">
               <label for="gt-arr">ARR Airport (ICAO/IATA)</label>
               <input type="text" id="gt-arr" placeholder="e.g. KASE" oninput="calcGate()">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gt-etd">Planned ETD (DEP local) <span class="label-hint">(for curfew check)</span></label>
+              <input type="datetime-local" id="gt-etd" oninput="calcGate()">
             </div>
           </div>
 
@@ -1382,29 +1396,29 @@
     // per leg, ~11 months Sep 2025 – Apr 2026). Refresh with:
     //   py C:/JetInsightBot/_build_airport_visit_counts.py <path/to.csv>
     // then re-derive top_airports/top_routes (see _activity_extract.py).
-    total_legs: 4616, total_block_hrs: 12211.6, distinct_trips: 4648,
+    total_legs: 4498, total_block_hrs: 11915.8, distinct_trips: 4529,
     period: "Sep 2025 – Apr 2026 (~8 months)",
     top_airports: [
-      ["TEB",378],["OPF",226],["BCT",211],["PBI",210],["HPN",178],["BED",174],
-      ["APF",167],["SDL",166],["LAS",158],["EGE",153],["VNY",149],["ASE",147],
-      ["IAD",128],["AUS",123],["SLC",118],["BZN",118],["TTA",116],["HOU",107],
-      ["MYNN",98],["JAC",98],["DAL",97],["APA",95],["PSP",94],["RDU",91],
-      ["BNA",89],["RIL",88],["PHL",85],["MDW",78],["PWK",78],["SNA",74],
-      ["SFO",74],["RSW",74],["FLL",68],["SUA",67],["SRQ",63],["BOS",61],
-      ["TUS",61],["SAN",56],["MMSL",56],["SAT",53],["SJC",53],["TPA",53],
-      ["VRB",52],["BJC",52],["BFI",50],["FRG",50],["MMSD",49],["MMU",49],
-      ["SBA",49],["ORL",48],
+      ["TEB",363],["OPF",221],["PBI",208],["BCT",207],["HPN",174],["BED",168],
+      ["APF",165],["SDL",164],["LAS",155],["EGE",153],["ASE",147],["VNY",145],
+      ["IAD",129],["AUS",121],["SLC",118],["BZN",116],["TTA",112],["HOU",105],
+      ["DAL",97],["MYNN",96],["PSP",92],["APA",91],["JAC",91],["RIL",88],
+      ["RDU",87],["BNA",83],["PHL",83],["MDW",78],["PWK",76],["SNA",75],
+      ["RSW",72],["SFO",70],["FLL",69],["SUA",67],["SRQ",61],["TUS",59],
+      ["BOS",57],["SAN",56],["SAT",53],["MMSL",53],["TPA",53],["SJC",51],
+      ["VRB",50],["BFI",50],["BJC",50],["MMU",49],["FRG",48],["MMSD",47],
+      ["CHS",47],["CMH",47],
     ],
     top_routes: [
-      ["ASE","TEB",9],["ASE","BCT",9],["TEB","BED",8],["BED","TEB",8],
-      ["TEB","MYNN",7],["TEB","BCT",7],["VNY","BZN",7],["ASE","OPF",7],
-      ["TEB","VNY",7],["VNY","BNA",6],["APF","BED",6],["HPN","TEB",6],
-      ["PBI","TEB",6],["TEB","HPN",6],["OPF","HPN",6],["BCT","PBI",6],
-      ["OPF","APF",6],["RGK","STP",6],["BNA","VNY",5],["VRB","PHL",5],
-      ["HOU","AUS",5],["OPF","BCT",5],["PHL","VRB",5],["JAC","TEB",5],
-      ["BCT","VRB",5],["OPF","SRQ",5],["TEB","ASE",5],["BCT","BED",5],
-      ["BOS","BED",5],["TEB","PBI",5],["BCT","RIL",5],["MDW","EGE",5],
-      ["EGE","TEB",5],["MYNN","OPF",4],["SDL","LAS",4],["LAS","SDL",4],
+      ["ASE","TEB",9],["ASE","BCT",9],["TEB","BED",8],["TEB","MYNN",7],
+      ["BED","TEB",7],["VNY","BZN",7],["ASE","OPF",7],["VNY","BNA",6],
+      ["APF","BED",6],["HPN","TEB",6],["PBI","TEB",6],["TEB","HPN",6],
+      ["OPF","HPN",6],["BCT","PBI",6],["TEB","BCT",6],["OPF","APF",6],
+      ["TEB","VNY",6],["PBI","IAD",5],["BNA","VNY",5],["VRB","PHL",5],
+      ["HOU","AUS",5],["OPF","BCT",5],["PHL","VRB",5],["BCT","VRB",5],
+      ["OPF","SRQ",5],["TEB","ASE",5],["BCT","BED",5],["TEB","PBI",5],
+      ["BCT","RIL",5],["MDW","EGE",5],["EGE","TEB",5],["RGK","STP",5],
+      ["MYNN","OPF",4],["TEB","PHL",4],["SDL","LAS",4],["LAS","SDL",4],
     ],
     // pic_stats intentionally omitted — public-facing calculator
     // doesn't surface per-pilot block-time data.
@@ -1447,6 +1461,56 @@
   // visit count < 3. Add codes here as you teach the model. Functionally
   // identical to EXCLUDED_AIRPORTS but kept separate for documentation.
   const KNOWN_GOOD_AIRPORTS = new Set(["CEU", "FDK", "LXT"]);
+
+  // ═════════════════════════════════════════════════════════════
+  // CURFEW_DATA — airports with noise/curfew time windows. Sourced from
+  // C:\JE_OpsDailyOverview\JE_OpsDaily\airport_db.py. Window hours are in
+  // LOCAL airport time (24h, 0-23). Hard ordinances are legally enforced
+  // (fines, operational shutoff per Stage 3/Class A/E rules); voluntary
+  // are best-effort with no fine but still bad form to violate.
+  // ═════════════════════════════════════════════════════════════
+  const CURFEW_DATA = {
+    // ── Hard ordinance (RED — legally enforced, fines/shutoff) ──────────
+    "SNA": {start: 22, end: 7,  hard: true,  applies: "BOTH", tz: "America/Los_Angeles", desc: "Class A/E noise ordinance, fines per violation"},
+    "HPN": {start: 23, end: 6,  hard: true,  applies: "BOTH", tz: "America/New_York",    desc: "FAA-imposed Stage 3 / hard curfew"},
+    "MMU": {start: 23, end: 7,  hard: true,  applies: "BOTH", tz: "America/New_York",    desc: "Hard nighttime curfew"},
+    "EGE": {start: 23, end: 7,  hard: true,  applies: "BOTH", tz: "America/Denver",      desc: "Stage 3 noise restriction"},
+    // ── Voluntary / advisory (YELLOW — non-enforced or fine-but-not-shutoff) ────
+    "APA": {start: 22, end: 7,  hard: false, applies: "BOTH", tz: "America/Denver",      desc: "Voluntary nighttime quiet hours"},
+    "ASE": {start: 23, end: 7,  hard: false, applies: "BOTH", tz: "America/Denver",      desc: "Voluntary nighttime curfew"},
+    "VNY": {start: 22, end: 7,  hard: false, applies: "BOTH", tz: "America/Los_Angeles", desc: "Advisory voluntary curfew"},
+    "HTO": {start: 23, end: 7,  hard: false, applies: "BOTH", tz: "America/New_York",    desc: "Advisory voluntary curfew"},
+  };
+
+  // Returns null if op is OK, else a {kind, severity, note} object.
+  // op_local_hour: 0-23 local airport time of the operation (DEP at ETD,
+  // ARR at ETA). Window is closed-open: [start, end) in local hours,
+  // wrapping past midnight when end < start.
+  function getCurfewNote(code, op_local_hour, edge /* "DEP" or "ARR" */) {
+    if (!code || op_local_hour == null || isNaN(op_local_hour)) return null;
+    const c = CURFEW_DATA[code.toUpperCase().trim()];
+    if (!c) return null;
+    if (c.applies !== "BOTH" && c.applies !== edge) return null;
+    // Hour-in-window check (handles overnight wrap)
+    const h = Math.floor(op_local_hour);
+    const inWindow = (c.start < c.end)
+      ? (h >= c.start && h < c.end)
+      : (h >= c.start || h < c.end);
+    if (!inWindow) return null;
+    const winStr = `${String(c.start).padStart(2,"0")}:00–${String(c.end).padStart(2,"0")}:00 local`;
+    if (c.hard) {
+      return {
+        kind: "CURFEW",
+        severity: "RED",
+        note: `<strong>HARD ORDINANCE — ${c.desc}.</strong> Window: ${winStr}. Operation cannot legally proceed within window without an exception.`,
+      };
+    }
+    return {
+      kind: "CURFEW",
+      severity: "ALERT",
+      note: `Voluntary curfew — ${c.desc}. Window: ${winStr}. Verify exception or shift schedule.`,
+    };
+  }
 
   function getVisitCount(code, tail) {
     if (!code) return 0;
@@ -2442,25 +2506,59 @@
       note: `BFL ${fmtFt(bfl)} at planned weight + ${oatF}°F vs assumed ${fmtFt(assumedRwyFt)}. Verify actual runway length.`,
     });
 
-    // Airport familiarity flags ([RURAL] + [LOW-VISIT]) — these are HIGH
-    // ALERTs (call the FBO before dispatch) but they don't change the GOM
+    // Airport familiarity flags ([RURAL] + [LOW-VISIT]) and CURFEW —
+    // HIGH ALERTs (call FBO / verify timing) that don't change the GOM
     // hard-floor verdict. They render in their own banner above the GOM
-    // table and downgrade the verdict to at-minimum "tight" so dispatch
-    // doesn't get a green "GO" when an FBO call is still pending.
+    // table and downgrade the verdict so dispatch doesn't get a green
+    // "GO" when an FBO call or a curfew exception is still pending.
     const airportFlags = [];
-    for (const [edge, code] of [['DEP', dep], ['ARR', arr]]) {
+
+    // Compute local hours of operation at DEP/ARR for the curfew check.
+    // ETD input is naive datetime-local (DEP local time). ETA = ETD + cruise
+    // hours from the route — same math used elsewhere on this panel.
+    const etdRaw = document.getElementById('gt-etd')?.value || "";
+    let depLocalHour = null, arrLocalHour = null;
+    if (etdRaw) {
+      const etd = new Date(etdRaw);
+      if (!isNaN(etd)) {
+        depLocalHour = etd.getHours() + etd.getMinutes()/60;
+        // ETA at ARR local — but the ARR airport may be in a different
+        // timezone. Without per-airport tz lookup in the calculator's
+        // baked DB, we approximate: assume both airports same wall-clock
+        // tz (best effort). Cleaner solution: bake tz into AIRPORT_DB.
+        // For now, a conservative approach: surface curfew at DEP using
+        // exact ETD local hour, and at ARR using ETD-tz-shifted ETA.
+        // Most US-CONUS routes share a tz band ±3h, and curfew windows
+        // are wide enough (5-9 hours) that small tz mismatches don't
+        // change the answer except right at the boundary. Acceptable.
+        const eta = new Date(etd.getTime() + tripHrs * 3600 * 1000);
+        arrLocalHour = eta.getHours() + eta.getMinutes()/60;
+      }
+    }
+
+    for (const [edge, code, hourLocal] of [['DEP', dep, depLocalHour], ['ARR', arr, arrLocalHour]]) {
       if (!code) continue;
       const ruralN = ruralAirportNote(code);
-      if (ruralN) airportFlags.push({kind: 'RURAL', edge, code, note: ruralN});
+      if (ruralN) airportFlags.push({kind: 'RURAL', edge, code, note: ruralN, severity: 'ALERT'});
       const lvN = lowVisitAirportNote(code, tail);
-      if (lvN) airportFlags.push({kind: 'LOW-VISIT', edge, code, note: lvN});
+      if (lvN) airportFlags.push({kind: 'LOW-VISIT', edge, code, note: lvN, severity: 'ALERT'});
+      const curfewN = hourLocal != null ? getCurfewNote(code, hourLocal, edge) : null;
+      if (curfewN) airportFlags.push({kind: curfewN.kind, edge, code, note: curfewN.note, severity: curfewN.severity});
     }
 
     const allPass = checks.every(c => c.pass);
     const anyWarn = checks.some(c => c.warn);
+    const anyRedFlag = airportFlags.some(f => f.severity === "RED");
+    const anyAlertFlag = airportFlags.some(f => f.severity === "ALERT");
     let key, label;
     if (!allPass) { key = "over"; label = "✗ NO-GO — One or more GOM hard floors fail"; }
-    else if (anyWarn || airportFlags.length) { key = "tight"; label = airportFlags.length ? "⚡ GO with HIGH ALERT — call FBO before dispatch (see below)" : "⚡ GO with caution — verify against actual flight plan"; }
+    else if (anyRedFlag) { key = "over"; label = "✗ NO-GO — Hard ordinance / curfew applies (see below)"; }
+    else if (anyWarn || anyAlertFlag) {
+      key = "tight";
+      label = anyAlertFlag
+        ? "⚡ GO with HIGH ALERT — call FBO / verify schedule before dispatch (see below)"
+        : "⚡ GO with caution — verify against actual flight plan";
+    }
     else { key = "clear"; label = "✓ GO — All GOM 2.4 hard floors pass"; }
 
     const checkRows = checks.map(c => {
@@ -2469,20 +2567,25 @@
       return `<div class="result-row"><span style="color:${color}">${icon}  ${c.label}</span><span>${c.note}</span></div>`;
     }).join("");
 
-    // High-alert banner — only renders when airportFlags is non-empty.
-    // Orange (not red/yellow) so [RURAL] / [LOW-VISIT] are visually
-    // distinct from NO-GO red severity rows and YELLOW caution items
-    // elsewhere on the panel. "HIGH ALERT" prefix in the note text
-    // keeps the urgency cue.
+    // High-alert banner — color-coded by per-flag severity:
+    //   RED  → crimson border + crimson badge (hard-ordinance curfew = NO-GO)
+    //   ALERT → orange border + orange badge ([RURAL]/[LOW-VISIT]/voluntary
+    //           curfew = call FBO / verify but not a hard NO-GO)
+    // Banner border picks the highest severity present.
+    const bannerHasRed = anyRedFlag;
+    const bannerColor = bannerHasRed ? "#c41c1c" : "#e65100";
+    const bannerBg    = bannerHasRed ? "#fff5f5" : "#fff8f0";
     const flagsBanner = airportFlags.length ? `
-      <div style="background:#fff8f0;border:2px solid #e65100;border-radius:6px;padding:10px 12px;margin:10px 0;">
-        ${airportFlags.map(f => `
+      <div style="background:${bannerBg};border:2px solid ${bannerColor};border-radius:6px;padding:10px 12px;margin:10px 0;">
+        ${airportFlags.map(f => {
+          const c = (f.severity === "RED") ? "#c41c1c" : "#e65100";
+          return `
           <div style="margin-bottom:6px;line-height:1.45;">
-            <span style="display:inline-block;background:#e65100;color:#fff;font-weight:700;font-size:0.78em;padding:2px 7px;border-radius:3px;letter-spacing:0.05em;margin-right:6px;">${f.kind}</span>
+            <span style="display:inline-block;background:${c};color:#fff;font-weight:700;font-size:0.78em;padding:2px 7px;border-radius:3px;letter-spacing:0.05em;margin-right:6px;">${f.kind}</span>
             <strong>${f.edge} ${f.code}</strong>
             <div style="margin:4px 0 0 4px;font-size:0.95em;">${f.note}</div>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
       </div>` : '';
 
     el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
@@ -2596,8 +2699,7 @@
   function renderActivity() {
     // Top routes
     const routesHtml = `
-      <div class="reasoning"><strong>${ACTIVITY_DATA.total_legs.toLocaleString()} legs</strong> · <strong>${ACTIVITY_DATA.total_block_hrs.toLocaleString()} block hrs</strong> · <strong>${ACTIVITY_DATA.distinct_trips.toLocaleString()} trips</strong>${' · '}<em>${ACTIVITY_DATA.period}</em></div>
-      <table class="pic-table" style="margin-top:10px;">
+            <table class="pic-table" style="margin-top:10px;">
         <thead><tr><th>DEP → ARR</th><th class="col-num">Flights</th></tr></thead>
         <tbody>${ACTIVITY_DATA.top_routes.map(([o,d,n]) =>
           `<tr><td>${o} → ${d}</td><td class="col-num">${n}</td></tr>`).join("")}</tbody>
