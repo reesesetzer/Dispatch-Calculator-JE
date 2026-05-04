@@ -1691,9 +1691,30 @@
     // altitude multiplier so the fuel build-up reflects the chosen FL.
     const cruiseFL = parseInt(document.getElementById('ns-fl')?.value) || 450;
     const sfcMult = _sfcMultForFL(cruiseFL);
-    const effectiveBurn = burnGalHr * sfcMult;
+
+    // --- Payload-driven weight (computed BEFORE fuel so weight correction
+    //     can flow into the burn).  Per Reese (2026-05-04): without this,
+    //     adding PAX/bags changed the ZFW/TOW/LW rows but never moved the
+    //     fuel-% headline — calculator looked broken to dispatch.
+    const BOW           = bew + CREW_ALLOW;
+    const totalPayload  = paxWt + bags;
+    const zfw           = BOW + totalPayload;
+
+    // --- Weight-corrected burn ---
+    // Citation X published burn varies ~7% from BOW (lightest) to MZFW.
+    // Linear scale on ZFW so payload moves the fuel%; clamped to [0, 1]
+    // so an off-spec input (zfw < BOW) doesn't drop burn below baseline.
+    const ZFW_BURN_VARIANCE = 0.07;   // +7% at MZFW vs BOW
+    const zfwLoadFraction   = Math.max(0, Math.min(1, (zfw - BOW) / (MZFW - BOW)));
+    const wgtMult           = 1.0 + ZFW_BURN_VARIANCE * zfwLoadFraction;
+
+    const effectiveBurn = burnGalHr * sfcMult * wgtMult;
     const sfcLabel = sfcMult === 1.0 ? "FL370 baseline" :
                      `FL${cruiseFL} (${sfcMult > 1 ? '+' : ''}${((sfcMult - 1) * 100).toFixed(0)}% vs FL370 baseline)`;
+    // wgtLabel surfaces the payload-impact on burn so dispatch can see WHY
+    // the fuel-% changed when PAX/bags were entered.
+    const wgtLabel = wgtMult === 1.0 ? "BOW baseline (empty leg)" :
+                     `+${((wgtMult - 1) * 100).toFixed(1)}% from payload (ZFW ${fmt(zfw)} / MZFW ${fmt(MZFW)})`;
 
     // --- Trip fuel build-up (lbs) — wind-corrected ground speed ---
     // headwind > 0 slows the airplane; headwind < 0 (tailwind) speeds it up.
@@ -1714,10 +1735,7 @@
     const rangeMargin   = perf.range_nm - distNm;
     const rangePctUsed  = distNm / perf.range_nm;
 
-    // --- Payload + planned weights ---
-    const BOW           = bew + CREW_ALLOW;
-    const totalPayload  = paxWt + bags;
-    const zfw           = BOW + totalPayload;
+    // --- Final planned weights (payload pieces moved up; TOW/LW need fuel) ---
     const tow           = zfw + totalFuelLbs;
 
     const zfwOver       = zfw - MZFW;
@@ -1788,6 +1806,7 @@
       <div class="result-row"><span>Cruise time @ ${headwind === 0 ? 'M.88 (zero wind)' : (headwind > 0 ? `${headwind} kt headwind` : `${Math.abs(headwind)} kt tailwind`)}</span><span>${tripHrs.toFixed(2)} hr (${groundSpeed} kt ground speed)</span></div>
       <div class="result-row"><span>Burn-rate basis</span><span>${burnSource}</span></div>
       <div class="result-row"><span>Effective burn @ FL${cruiseFL}</span><span>${effectiveBurn.toFixed(0)} gal/hr  ·  ${sfcLabel}</span></div>
+      <div class="result-row"><span>Weight correction</span><span>${wgtLabel}</span></div>
 
       <hr class="result-divider">
 
