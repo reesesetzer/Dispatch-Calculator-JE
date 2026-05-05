@@ -504,7 +504,7 @@
   <section id="tab-payload" class="tab-pane active">
     <div class="page-heading">
       <h2>Max Payload Remaining</h2>
-      <p>Citation X &nbsp;·&nbsp; MZFW 24,400 lbs &nbsp;·&nbsp; BOW = BEW + 725 lbs (avg. crew weight, life raft, stock, crew baggage, etc. — Chief Pilot conservative default)</p>
+      <p>Citation X &nbsp;·&nbsp; MZFW 24,400 lbs &nbsp;·&nbsp; BOW = BEW + 725 lbs (avg. crew weight, life raft, stock, crew baggage, etc.)</p>
     </div>
 
     <div class="calc-grid">
@@ -639,7 +639,7 @@
             <div class="form-group">
               <label for="ns-fl">Cruise Altitude <span class="label-hint">(MEL drops typical cruise)</span></label>
               <select id="ns-fl" onchange="_nsAutoFetch()">
-                <option value="430" selected>FL430  ·  Chief Pilot default (conservative)</option>
+                <option value="430" selected>FL430  ·  conservative dispatch default</option>
                 <option value="450">FL450  ·  optimal Citation X cruise</option>
                 <option value="410">FL410</option>
                 <option value="390">FL390</option>
@@ -1278,13 +1278,13 @@
   // CONSTANTS
   // ═════════════════════════════════════════════════════════════
   const MZFW            = 24400;
-  // Conservative dispatch defaults per JE Chief Pilot (2026-05-05):
+  // JE conservative dispatch defaults (2026-05-05):
   //   - CREW_ALLOW bumped 700 → 725 (BOW = BEW + 725) for unaccounted weight
   //   - CRUISE_KTAS = 490 (Mach .86 long-range cruise, was 510 / M.88 high-speed)
   //   - Default cruise FL changed to 430 (see #ns-fl select + _sfcMultForFL)
   // Net effect: heavier BOW + slower cruise + slightly less efficient FL = more
   // conservative fuel & weight numbers across all tabs.
-  const CREW_ALLOW      = 725;          // BOW = BEW + 725 (Chief Pilot default)
+  const CREW_ALLOW      = 725;          // BOW = BEW + 725
   const CRUISE_KTAS     = 490;          // Citation X M.86 (LRC) ≈ 490 KTAS
   const LBS_PER_GAL     = 6.7;          // Jet-A
   const RESERVE_MIN     = 45;           // GOM 2.4.3.b — 45-min IFR final reserve
@@ -2132,9 +2132,9 @@
   // when forced low (MEL situations like RVSM-out at FL280-FL290).
   // Numbers calibrated to published Citation X cruise charts.
   function _sfcMultForFL(fl) {
-    fl = parseInt(fl) || 430;     // Chief Pilot default cruise FL
+    fl = parseInt(fl) || 430;     // conservative dispatch default
     if (fl >= 450) return 0.90;   // peak efficiency
-    if (fl >= 430) return 0.92;   // Chief Pilot default — conservative pick
+    if (fl >= 430) return 0.92;   // conservative dispatch default — slightly less SFC than FL450
     if (fl >= 410) return 0.94;
     if (fl >= 390) return 0.97;
     if (fl >= 370) return 1.00;   // baseline
@@ -2349,7 +2349,7 @@
     if (bew === null) return `${tail} BEW unavailable — contact dispatch.`;
     const pax = parseFloat(document.getElementById('c2-paxwt').value) || 0;
     const bag = parseFloat(document.getElementById('c2-bags').value) || 0;
-    const bow = bew + CREW_ALLOW;   // 725 (Chief Pilot default)
+    const bow = bew + CREW_ALLOW;   // 725 (conservative default)
     const mp = MZFW - bow;
     const remaining = mp - pax - bag;
     return `*Max Payload — ${tail}*\n`
