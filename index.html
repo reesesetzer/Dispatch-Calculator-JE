@@ -504,7 +504,7 @@
   <section id="tab-payload" class="tab-pane active">
     <div class="page-heading">
       <h2>Max Payload Remaining</h2>
-      <p>Citation X &nbsp;·&nbsp; MZFW 24,400 lbs &nbsp;·&nbsp; BOW = BEW + 700 lbs (avg. crew weight, life raft, stock, crew baggage, etc.)</p>
+      <p>Citation X &nbsp;·&nbsp; MZFW 24,400 lbs &nbsp;·&nbsp; BOW = BEW + 725 lbs (avg. crew weight, life raft, stock, crew baggage, etc. — Chief Pilot conservative default)</p>
     </div>
 
     <div class="calc-grid">
@@ -519,9 +519,9 @@
 
           <div class="weight-ref">
             <span class="wl">BEW (N760XJ)</span><span class="wv">22,015 lbs</span>
-            <span class="wl">BOW</span>          <span class="wv">22,715 lbs</span>
+            <span class="wl">BOW</span>          <span class="wv">22,740 lbs</span>
             <span class="wl">MZFW</span>         <span class="wv">24,400 lbs</span>
-            <span class="wl">Max Payload</span>  <span class="wv">1,685 lbs</span>
+            <span class="wl">Max Payload</span>  <span class="wv">1,660 lbs</span>
           </div>
 
           <div class="form-group">
@@ -639,8 +639,8 @@
             <div class="form-group">
               <label for="ns-fl">Cruise Altitude <span class="label-hint">(MEL drops typical cruise)</span></label>
               <select id="ns-fl" onchange="_nsAutoFetch()">
-                <option value="450" selected>FL450  ·  optimal Citation X cruise (default)</option>
-                <option value="430">FL430  ·  near-optimal</option>
+                <option value="430" selected>FL430  ·  Chief Pilot default (conservative)</option>
+                <option value="450">FL450  ·  optimal Citation X cruise</option>
                 <option value="410">FL410</option>
                 <option value="390">FL390</option>
                 <option value="370">FL370</option>
@@ -1278,8 +1278,14 @@
   // CONSTANTS
   // ═════════════════════════════════════════════════════════════
   const MZFW            = 24400;
-  const CREW_ALLOW      = 700;          // BOW = BEW + 700
-  const CRUISE_KTAS     = 510;          // Citation X M.88 ≈ 510 KTAS
+  // Conservative dispatch defaults per JE Chief Pilot (2026-05-05):
+  //   - CREW_ALLOW bumped 700 → 725 (BOW = BEW + 725) for unaccounted weight
+  //   - CRUISE_KTAS = 490 (Mach .86 long-range cruise, was 510 / M.88 high-speed)
+  //   - Default cruise FL changed to 430 (see #ns-fl select + _sfcMultForFL)
+  // Net effect: heavier BOW + slower cruise + slightly less efficient FL = more
+  // conservative fuel & weight numbers across all tabs.
+  const CREW_ALLOW      = 725;          // BOW = BEW + 725 (Chief Pilot default)
+  const CRUISE_KTAS     = 490;          // Citation X M.86 (LRC) ≈ 490 KTAS
   const LBS_PER_GAL     = 6.7;          // Jet-A
   const RESERVE_MIN     = 45;           // GOM 2.4.3.b — 45-min IFR final reserve
   const TAXI_FUEL_LBS   = 250;          // start, taxi, runup
@@ -1689,7 +1695,7 @@
     // Citation X is most efficient FL410-FL450; burn climbs significantly
     // when forced low (MEL situations). Scale the burn rate by an
     // altitude multiplier so the fuel build-up reflects the chosen FL.
-    const cruiseFL = parseInt(document.getElementById('ns-fl')?.value) || 450;
+    const cruiseFL = parseInt(document.getElementById('ns-fl')?.value) || 430;
     const sfcMult = _sfcMultForFL(cruiseFL);
 
     // --- Payload-driven weight (computed BEFORE fuel so weight correction
@@ -1803,7 +1809,7 @@
       <div class="result-row"><span>Tail / MTOW / Range</span><span>${tailVal} · ${fmt(perf.mtow)} · ${fmtNum(perf.range_nm)} nm</span></div>
       <div class="result-row"><span>Trip distance</span><span>${fmtNum(distNm)} nm  (${(rangePctUsed * 100).toFixed(1)}% of range)</span></div>
       <div class="result-row"><span>Cruise altitude</span><span>FL${cruiseFL}</span></div>
-      <div class="result-row"><span>Cruise time @ ${headwind === 0 ? 'M.88 (zero wind)' : (headwind > 0 ? `${headwind} kt headwind` : `${Math.abs(headwind)} kt tailwind`)}</span><span>${tripHrs.toFixed(2)} hr (${groundSpeed} kt ground speed)</span></div>
+      <div class="result-row"><span>Cruise time @ ${headwind === 0 ? 'M.86 (zero wind)' : (headwind > 0 ? `${headwind} kt headwind` : `${Math.abs(headwind)} kt tailwind`)}</span><span>${tripHrs.toFixed(2)} hr (${groundSpeed} kt ground speed)</span></div>
       <div class="result-row"><span>Burn-rate basis</span><span>${burnSource}</span></div>
       <div class="result-row"><span>Effective burn @ FL${cruiseFL}</span><span>${effectiveBurn.toFixed(0)} gal/hr  ·  ${sfcLabel}</span></div>
       <div class="result-row"><span>Weight correction</span><span>${wgtLabel}</span></div>
@@ -1820,7 +1826,7 @@
 
       <hr class="result-divider">
 
-      <div class="result-row"><span>BOW (BEW + 700)</span><span>${fmt(BOW)}</span></div>
+      <div class="result-row"><span>BOW (BEW + 725)</span><span>${fmt(BOW)}</span></div>
       <div class="result-row"><span>Payload (PAX + bags)</span><span>${fmt(totalPayload)}</span></div>
       <div class="result-row"><span>Zero-fuel weight</span><span>${fmt(zfw)} / MZFW ${fmt(MZFW)}</span></div>
       <div class="result-row"><span>Estimated takeoff weight</span><span>${fmt(tow)} / MTOW ${fmt(perf.mtow)}</span></div>
@@ -2126,9 +2132,9 @@
   // when forced low (MEL situations like RVSM-out at FL280-FL290).
   // Numbers calibrated to published Citation X cruise charts.
   function _sfcMultForFL(fl) {
-    fl = parseInt(fl) || 450;
+    fl = parseInt(fl) || 430;     // Chief Pilot default cruise FL
     if (fl >= 450) return 0.90;   // peak efficiency
-    if (fl >= 430) return 0.92;
+    if (fl >= 430) return 0.92;   // Chief Pilot default — conservative pick
     if (fl >= 410) return 0.94;
     if (fl >= 390) return 0.97;
     if (fl >= 370) return 1.00;   // baseline
@@ -2343,7 +2349,7 @@
     if (bew === null) return `${tail} BEW unavailable — contact dispatch.`;
     const pax = parseFloat(document.getElementById('c2-paxwt').value) || 0;
     const bag = parseFloat(document.getElementById('c2-bags').value) || 0;
-    const bow = bew + 700;
+    const bow = bew + CREW_ALLOW;   // 725 (Chief Pilot default)
     const mp = MZFW - bow;
     const remaining = mp - pax - bag;
     return `*Max Payload — ${tail}*\n`
