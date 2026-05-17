@@ -2868,10 +2868,28 @@
       pass: lwApprox <= perf.mlw,
       note: `LW ${fmt(lwApprox)} vs MLW ${fmt(perf.mlw)} (${(lwApprox/perf.mlw*100).toFixed(1)}%)`,
     });
+    // Critical OAT — max temperature at which the planned takeoff weight
+    // still fits the actual runway. Surfaces context for high-DA fields
+    // like ASE (elev 7,820 / rwy 8,006) where BFL climbs steeply with OAT
+    // — dispatch sees not just pass/fail but the operational margin
+    // (e.g. "fits today at 65°F but infeasible above 72°F at this weight").
+    const critOatF = criticalOatF(perf, tow, elev, rwyFt);
+    let oatLine = "";
+    if (critOatF === Infinity) {
+      oatLine = " Fits across the planning OAT range at this weight.";
+    } else if (critOatF === null) {
+      oatLine = " Infeasible at this weight across the OAT range — reduce weight or use a longer field.";
+    } else {
+      const margin = critOatF - oatF;
+      const marginLbl = margin >= 0
+        ? `+${margin.toFixed(0)}°F margin to fail`
+        : `${margin.toFixed(0)}°F PAST critical — over by ${(-margin).toFixed(0)}°F`;
+      oatLine = ` Critical OAT at this weight: ${critOatF.toFixed(0)}°F (${marginLbl}).`;
+    }
     checks.push({
       label: "GOM 2.4.3.d — DEP runway @ OAT",
       pass: bfl <= rwyFt,
-      note: `BFL ${fmtFt(bfl)} at planned weight + ${oatF}°F vs ${fmtFt(rwyFt)} (${rwySourceNote}).`,
+      note: `BFL ${fmtFt(bfl)} at planned weight + ${oatF}°F vs ${fmtFt(rwyFt)} (${rwySourceNote}).${oatLine}`,
     });
 
     // Airport familiarity flags ([RURAL] + [LOW-VISIT]) and CURFEW —
