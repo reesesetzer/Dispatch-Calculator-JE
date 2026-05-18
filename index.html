@@ -485,6 +485,7 @@
   <button class="active" data-tab="payload">Max Payload</button>
   <button data-tab="nonstop">Nonstop Feasibility</button>
   <button data-tab="runway">Takeoff Performance</button>
+  <button data-tab="landing">Landing Performance</button>
   <button data-tab="gate">Pre-Flight Gate</button>
   <button data-tab="tailfind">Tail Finder</button>
   <!-- Fleet Activity tab hidden per Reese (2026-05-13).  Section + JS kept
@@ -751,6 +752,104 @@
           </div>
 
           <div id="rw-result" class="result hidden"></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- TAB 4: LANDING PERFORMANCE                                -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="tab-landing" class="tab-pane">
+    <div class="page-heading">
+      <h2>Landing Performance</h2>
+      <p>Landing distance required at planned LW vs. destination runway &nbsp;·&nbsp; corrected for elevation, OAT, wind &amp; runway condition</p>
+    </div>
+
+    <div class="calc-grid single">
+      <div class="card">
+        <div class="card-header">
+          <h3>Arrival Performance</h3>
+          <p>Citation X dry landing distance = ~3,300 ft @ MLW / SL / ISA / no wind.  Scales with DA, weight, wind, surface condition.  Final number is FuelerLinx-authoritative — this is a planning estimate.</p>
+        </div>
+        <div class="card-body">
+
+          <div class="form-group">
+            <label for="ld-tail">Tail Number</label>
+            <select id="ld-tail" onchange="calcLanding()">
+              <option value="">— Select Tail —</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ld-airport">Destination Airport <span class="label-hint">(ICAO or IATA — auto-fills elev + rwy)</span></label>
+              <input type="text" id="ld-airport" placeholder="e.g. KSEZ or SEZ" oninput="onLandingAirportInput()" onblur="onLandingAirportBlur()">
+            </div>
+            <div class="form-group">
+              <label for="ld-eta">Planned ETA (local) <span class="label-hint">(for OAT forecast)</span></label>
+              <input type="datetime-local" id="ld-eta">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <button type="button" id="ld-fetch-oat" onclick="fetchLiveLandingOat()" style="
+              padding: 9px 14px; background: var(--red); color: var(--white);
+              border: none; border-radius: 3px; font-size: 13px; font-weight: bold;
+              text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
+              transition: background 0.15s;">Fetch Live OAT + Wind</button>
+            <span id="ld-fetch-status" style="margin-left: 12px; font-size: 12px; color: var(--muted);"></span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ld-elev">Field Elevation (ft)</label>
+              <input type="number" id="ld-elev" min="0" step="50" value="0" oninput="calcLanding()">
+            </div>
+            <div class="form-group">
+              <label for="ld-rwy">Available Runway / LDA (ft)</label>
+              <input type="number" id="ld-rwy" min="0" step="100" value="6000" oninput="calcLanding()">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ld-lw">Planned Landing Weight (lbs) <span class="label-hint">(or 0 = use MLW estimate)</span></label>
+              <input type="number" id="ld-lw" min="0" step="100" value="0" oninput="calcLanding()">
+            </div>
+            <div class="form-group">
+              <label for="ld-oat">OAT (&deg;F)</label>
+              <input type="number" id="ld-oat" step="1" value="59" oninput="calcLanding()">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ld-wind-dir">Wind Direction (°FROM)</label>
+              <input type="number" id="ld-wind-dir" min="0" max="360" step="10" placeholder="e.g. 270" oninput="calcLanding()">
+            </div>
+            <div class="form-group">
+              <label for="ld-wind-spd">Wind Speed (kt)</label>
+              <input type="number" id="ld-wind-spd" min="0" step="1" value="0" oninput="calcLanding()">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ld-rwy-id">Landing Runway End <span class="label-hint">(for headwind/tailwind calc — leave blank for "best end")</span></label>
+              <input type="text" id="ld-rwy-id" placeholder="e.g. 03, 25, 31R" oninput="calcLanding()">
+            </div>
+            <div class="form-group">
+              <label for="ld-cond">Runway Condition</label>
+              <select id="ld-cond" onchange="calcLanding()">
+                <option value="dry" selected>Dry</option>
+                <option value="wet">Wet (+15%)</option>
+                <option value="contam">Contaminated (+70%)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="ld-result" class="result hidden"></div>
 
         </div>
       </div>
@@ -1708,7 +1807,7 @@
   // ═════════════════════════════════════════════════════════════
   function populateTailDropdowns() {
     const tails = Object.keys(FLEET_BEW).sort();
-    const targets = ['c2-tail', 'ns-tail', 'rw-tail', 'gt-tail'];
+    const targets = ['c2-tail', 'ns-tail', 'rw-tail', 'ld-tail', 'gt-tail'];
     targets.forEach(id => {
       const sel = document.getElementById(id);
       if (!sel) return;
@@ -2313,6 +2412,248 @@
   }
 
   // ═════════════════════════════════════════════════════════════
+  // TAB 4: LANDING PERFORMANCE
+  // ═════════════════════════════════════════════════════════════
+  // Citation X landing distance — generic factored references.  Per-tail
+  // landing perf data isn't in FLEET_PERF (FuelerLinx is the source of
+  // truth at the operational layer); these constants give planning-grade
+  // estimates so dispatch can spot tight cases before pulling FuelerLinx.
+  //
+  // Reference scenario: MLW (31,800 lbs), SL, ISA (+15°C), dry, no wind,
+  // FACTORED landing distance (Part 135 / Subpart K convention ≈ raw × 1.67):
+  //   ~3,300 ft factored at MLW / SL / ISA / dry / zero wind
+  //
+  // Scaling per real-world Citation X charts:
+  //   - Weight    : ld ∝ (LW/MLW)^1.1  (slightly super-linear)
+  //   - Elevation : +5% per 1,000 ft DA above SL
+  //   - Wind      : -1.5%/kt headwind  ·  +5%/kt tailwind  (FAA conv.)
+  //   - Surface   : dry 1.00  ·  wet 1.15  ·  contaminated 1.70
+  // All numbers are CONSERVATIVE — the calc errs on calling things tight
+  // before they actually become tight.  Verify with FuelerLinx / AFM
+  // before release.
+  const LANDING_REF_FT      = 3300;     // Citation X @ MLW / SL / ISA / dry / nowind (factored)
+  const LANDING_REF_MLW     = 31800;    // lbs
+  const LANDING_WT_EXP      = 1.1;
+  const LANDING_DA_FACTOR   = 0.05;     // +5% per 1,000 ft DA
+  const LANDING_HW_FACTOR   = 0.015;    // -1.5% per kt headwind
+  const LANDING_TW_FACTOR   = 0.05;     // +5% per kt tailwind
+  const LANDING_SURFACE     = { dry: 1.0, wet: 1.15, contam: 1.7 };
+
+  function landingDistAtConditions(perf, lw_lbs, elev_ft, oat_c, headwind_kt, surface) {
+    const mlw    = (perf && perf.mlw) || LANDING_REF_MLW;
+    const weight = lw_lbs > 0 ? lw_lbs : mlw;
+    const wRatio = weight / LANDING_REF_MLW;
+    const wScale = Math.pow(wRatio, LANDING_WT_EXP);
+
+    const da    = densityAlt(elev_ft, oat_c);
+    const daKft = da / 1000;
+    const daScale = 1 + LANDING_DA_FACTOR * daKft;
+
+    let windScale = 1.0;
+    if (headwind_kt > 0) {
+      // Cap headwind benefit at 50% of reported (FAA wind correction).
+      const effectiveHw = headwind_kt * 0.5;
+      windScale = Math.max(0.6, 1 - LANDING_HW_FACTOR * effectiveHw);
+    } else if (headwind_kt < 0) {
+      // Tailwind: use 150% of reported as the planning value (FAA conv.).
+      const effectiveTw = Math.abs(headwind_kt) * 1.5;
+      windScale = 1 + LANDING_TW_FACTOR * effectiveTw;
+    }
+
+    const surfScale = LANDING_SURFACE[surface] || 1.0;
+
+    const ld = LANDING_REF_FT * wScale * daScale * windScale * surfScale;
+    return { ld: Math.max(ld, 0), da, daScale, wScale, windScale, surfScale, weight };
+  }
+
+  function landingHeadwindKt(windFromDeg, windSpdKt, rwyHeadingDeg) {
+    // Headwind = +, tailwind = -
+    if (isNaN(windFromDeg) || isNaN(windSpdKt) || windSpdKt <= 0) return 0;
+    const angle = (windFromDeg - rwyHeadingDeg) * Math.PI / 180;
+    return windSpdKt * Math.cos(angle);
+  }
+
+  function _parseRunwayEndHeading(rwyId) {
+    if (!rwyId) return null;
+    const digits = (rwyId || "").toString().match(/\d+/);
+    if (!digits) return null;
+    const n = parseInt(digits[0], 10);
+    if (!(n >= 1 && n <= 36)) return null;
+    return (n * 10) % 360 || 360;
+  }
+
+  function calcLanding() {
+    const tailVal = document.getElementById('ld-tail').value;
+    const elev    = Math.max(0, parseFloat(document.getElementById('ld-elev').value) || 0);
+    const rwyFt   = Math.max(0, parseFloat(document.getElementById('ld-rwy').value)  || 0);
+    let   lw      = Math.max(0, parseFloat(document.getElementById('ld-lw').value)   || 0);
+    const oat_f   = parseFloat(document.getElementById('ld-oat').value);
+    const windDir = parseFloat(document.getElementById('ld-wind-dir').value);
+    const windSpd = Math.max(0, parseFloat(document.getElementById('ld-wind-spd').value) || 0);
+    const rwyIdRaw = document.getElementById('ld-rwy-id').value;
+    const surface = document.getElementById('ld-cond').value || 'dry';
+
+    const el = document.getElementById('ld-result');
+    if (!tailVal || rwyFt <= 0 || isNaN(oat_f)) { el.classList.add('hidden'); return; }
+
+    const perf = FLEET_PERF[tailVal];
+    if (!perf) {
+      el.classList.remove('hidden', 'bg-tight', 'bg-clear', 'bg-ok', 'bg-over');
+      el.classList.add('bg-tight');
+      el.innerHTML = `<div class="result-row"><strong>Performance data unavailable for ${tailVal}.</strong></div>`;
+      return;
+    }
+
+    // Headwind component on the chosen runway end (or worst-case if not provided).
+    let headwindKt = 0;
+    let rwyEndLabel = "any end (no runway selected)";
+    if (rwyIdRaw && !isNaN(windDir) && windSpd > 0) {
+      const heading = _parseRunwayEndHeading(rwyIdRaw);
+      if (heading !== null) {
+        headwindKt = landingHeadwindKt(windDir, windSpd, heading);
+        rwyEndLabel = `RWY ${rwyIdRaw.toUpperCase()} (${heading.toString().padStart(3, '0')}°)`;
+      }
+    }
+
+    const oat_c = fF2C(oat_f);
+    const result = landingDistAtConditions(perf, lw, elev, oat_c, headwindKt, surface);
+    const ld = result.ld;
+    const margin = rwyFt - ld;
+
+    let key, label, headline;
+    if (rwyFt < 4500) {
+      key = 'over';
+      label = '⚠  RUNWAY TOO SHORT — Below GOM 4,500 ft Minimum';
+      headline = `Available landing rwy ${fmtFt(rwyFt)} is below the GOM 2.4.3.d hard floor of 4,500 ft.`;
+    } else if (margin < 0) {
+      key = 'over';
+      label = '⚠  INFEASIBLE — Landing Distance Exceeds Available';
+      headline = `Required landing distance ${fmtFt(ld)} exceeds available ${fmtFt(rwyFt)} by ${fmtFt(-margin)}.`;
+    } else if (margin < 500) {
+      key = 'tight';
+      label = '⚡  TIGHT — Margin Below 500 ft';
+      headline = `Landing distance ${fmtFt(ld)} fits ${fmtFt(rwyFt)}, but margin is only ${fmtFt(margin)}.  Verify FuelerLinx.`;
+    } else if (margin < 1500) {
+      key = 'ok';
+      label = '✓  OK — Standard Margin';
+      headline = `Landing distance ${fmtFt(ld)} vs ${fmtFt(rwyFt)} — ${fmtFt(margin)} of cushion.`;
+    } else {
+      key = 'clear';
+      label = '✓  CLEAR — Comfortable Margin';
+      headline = `Landing distance ${fmtFt(ld)} vs ${fmtFt(rwyFt)} — ${fmtFt(margin)} of cushion.`;
+    }
+
+    const isa_c = isaAtElev(elev);
+    const isa_dev = oat_c - isa_c;
+    const windPretty = (windSpd > 0 && !isNaN(windDir))
+      ? `${windDir.toString().padStart(3, '0')}/${windSpd}KT  ·  ${headwindKt >= 0 ? '+' : ''}${headwindKt.toFixed(0)}kt headwind on ${rwyEndLabel}`
+      : 'no wind data';
+
+    el.classList.remove('hidden', 'bg-clear', 'bg-ok', 'bg-tight', 'bg-over');
+    el.classList.add('bg-' + key);
+
+    el.innerHTML = `
+      <div class="result-row"><span><strong>Verdict</strong></span><strong>${headline}</strong></div>
+      <hr class="result-divider">
+
+      <div class="result-row"><span>Tail / MLW</span><span>${tailVal} · ${fmt(perf.mlw)} lbs</span></div>
+      <div class="result-row"><span>Field elevation</span><span>${fmtFt(elev)} (ISA ${isa_c.toFixed(1)} °C)</span></div>
+      <div class="result-row"><span>OAT</span><span>${oat_f.toFixed(0)} °F (${oat_c.toFixed(1)} °C, ISA${isa_dev >= 0 ? '+' : ''}${isa_dev.toFixed(1)} °C)</span></div>
+      <div class="result-row"><span>Density altitude</span><span>${fmtFt(result.da)}</span></div>
+      <div class="result-row"><span>Planned landing weight</span><span>${fmt(result.weight)} lbs (${(result.weight / perf.mlw * 100).toFixed(1)}% of MLW)</span></div>
+      <div class="result-row"><span>Wind</span><span>${windPretty}</span></div>
+      <div class="result-row"><span>Surface condition</span><span>${surface === 'dry' ? 'Dry' : surface === 'wet' ? 'Wet (+15%)' : 'Contaminated (+70%)'}</span></div>
+
+      <hr class="result-divider">
+
+      <div class="result-row"><span>Base factored landing distance</span><span>${fmtFt(LANDING_REF_FT)} (@ MLW / SL / ISA / dry / nowind)</span></div>
+      <div class="result-row"><span>Weight scale</span><span>× ${result.wScale.toFixed(3)} (LW/MLW ratio)</span></div>
+      <div class="result-row"><span>DA scale</span><span>× ${result.daScale.toFixed(3)} (+5%/1000 ft DA)</span></div>
+      <div class="result-row"><span>Wind scale</span><span>× ${result.windScale.toFixed(3)}</span></div>
+      <div class="result-row"><span>Surface scale</span><span>× ${result.surfScale.toFixed(2)}</span></div>
+      <div class="result-row"><span>Required landing distance</span><strong>${fmtFt(ld)}</strong></div>
+      <div class="result-row"><span>Available runway / LDA</span><span>${fmtFt(rwyFt)}</span></div>
+      <div class="result-row"><span>Margin</span><strong>${margin >= 0 ? fmtFt(margin) : '−' + fmtFt(-margin)}</strong></div>
+
+      <div class="status-badge s-${key}">${label}</div>
+      <div class="reasoning"><strong>Note:</strong> Generic Citation X landing distance estimate (factored ≈ Part 135 SubK convention).  Per-tail data lives in FuelerLinx — use that as final authority before release.  Wind correction follows FAA convention (50% headwind credit, 150% tailwind penalty).</div>
+    `;
+  }
+
+  // Live OAT + Wind lookup for the Landing tab.  Reuses the same Open-Meteo
+  // endpoint pattern as the Takeoff tab's fetchLiveOat() helper.
+  let _ldAirportLookupResult = null;
+
+  function onLandingAirportInput() {
+    const v = document.getElementById('ld-airport').value;
+    const rec = lookupAirport(v);
+    const status = document.getElementById('ld-fetch-status');
+    if (rec) {
+      _ldAirportLookupResult = rec;
+      status.style.color = "#1b5e20";
+      status.textContent = `✓ ${rec.icao} — ${rec.name} (${fmtFt(rec.elev)} elev${rec.rwy_ft ? ', ' + fmtFt(rec.rwy_ft) + ' rwy' : ''})`;
+      document.getElementById('ld-elev').value = rec.elev || 0;
+      if (rec.rwy_ft) document.getElementById('ld-rwy').value = rec.rwy_ft;
+      calcLanding();
+    } else if (v.length >= 3) {
+      _ldAirportLookupResult = null;
+      status.style.color = "var(--muted)";
+      status.textContent = `Type 3+ chars to look up (no match for "${v}")`;
+    } else {
+      status.textContent = "";
+    }
+  }
+  function onLandingAirportBlur() { /* hook for future formatting */ }
+
+  async function fetchLiveLandingOat() {
+    const status = document.getElementById('ld-fetch-status');
+    const rec = _ldAirportLookupResult;
+    const etaRaw = document.getElementById('ld-eta').value;
+    if (!rec) {
+      status.style.color = "var(--red)";
+      status.textContent = "Set destination airport first.";
+      return;
+    }
+    if (!etaRaw) {
+      status.style.color = "var(--red)";
+      status.textContent = "Set planned ETA first.";
+      return;
+    }
+    status.style.color = "var(--muted)";
+    status.textContent = "Fetching forecast…";
+    try {
+      const eta = new Date(etaRaw);
+      const url = `https://api.open-meteo.com/v1/forecast`
+                + `?latitude=${rec.lat.toFixed(2)}&longitude=${rec.lon.toFixed(2)}`
+                + `&hourly=temperature_2m,wind_speed_10m,wind_direction_10m`
+                + `&temperature_unit=fahrenheit&wind_speed_unit=kn`
+                + `&timezone=auto&forecast_days=7`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      const times = data.hourly?.time || [];
+      const temps = data.hourly?.temperature_2m || [];
+      const wsps = data.hourly?.wind_speed_10m || [];
+      const wdirs = data.hourly?.wind_direction_10m || [];
+      if (!times.length) throw new Error("No forecast returned");
+      let bestI = 0, bestDiff = Infinity;
+      for (let i = 0; i < times.length; i++) {
+        const diff = Math.abs(new Date(times[i]) - eta);
+        if (diff < bestDiff) { bestDiff = diff; bestI = i; }
+      }
+      document.getElementById('ld-oat').value = Math.round(temps[bestI]);
+      document.getElementById('ld-wind-dir').value = Math.round(wdirs[bestI]);
+      document.getElementById('ld-wind-spd').value = Math.round(wsps[bestI]);
+      status.style.color = "#1b5e20";
+      status.textContent = `✓ Forecast at ${rec.icao} ${eta.toLocaleString()}: ${Math.round(temps[bestI])}°F, ${Math.round(wdirs[bestI])}/${Math.round(wsps[bestI])}KT`;
+      calcLanding();
+    } catch (e) {
+      status.style.color = "var(--red)";
+      status.textContent = `Fetch failed: ${e.message}`;
+    }
+  }
+
+  // ═════════════════════════════════════════════════════════════
   // TAB 4: PIC FUEL BURN
   // ═════════════════════════════════════════════════════════════
   let picSortKey = 'd30';
@@ -2899,6 +3240,41 @@
     // "GO" when an FBO call or a curfew exception is still pending.
     const airportFlags = [];
 
+    // ── High-elevation field awareness ─────────────────────────────
+    // Triggers an ALERT when the DEP airport elevation is ≥ 5,000 ft
+    // (covers JAC 6,451 / EGE 6,548 / ASE 7,820 / TEX 9,078 / AEJ 7,946
+    // and similar mountain ops).  Calls out the critical OAT and warns
+    // when conditions push past the FuelerLinx calibration envelope
+    // (DA > 8,000 ft = past the 5,000 ft / +20°C upper reference where
+    // our 2-point BFL interpolation starts extrapolating).
+    const HIGH_ELEV_FT       = 5000;
+    const CALIBRATION_DA_FT  = 8000;
+    if (elev >= HIGH_ELEV_FT) {
+      const da = bflAtConditions(perf, tow, elev, oatC).da_now;
+      const beyondCalib = da > CALIBRATION_DA_FT;
+      let critOatText;
+      if (critOatF === null) {
+        critOatText = `Infeasible across the planning OAT range at this weight — reduce weight, lighten fuel, or pick a longer field.`;
+      } else if (critOatF === Infinity) {
+        critOatText = `Fits across the planning OAT range at this weight.`;
+      } else {
+        const headroom = critOatF - oatF;
+        critOatText = headroom >= 0
+          ? `Critical OAT (BFL = available rwy): *${critOatF.toFixed(0)}°F* — *${headroom.toFixed(0)}°F* of margin before infeasible.`
+          : `Critical OAT (BFL = available rwy): *${critOatF.toFixed(0)}°F* — already *${(-headroom).toFixed(0)}°F PAST* critical at planned weight.`;
+      }
+      const calibNote = beyondCalib
+        ? `  ⚠ DA ${fmtFt(da)} is beyond the 2-point calibration envelope — verify BFL with FuelerLinx before release.`
+        : ``;
+      airportFlags.push({
+        kind: 'HIGH-ELEV',
+        edge: 'DEP',
+        code: dep,
+        note: `High-elevation field ${dep} (${fmtFt(elev)}). ${critOatText}${calibNote}`,
+        severity: 'ALERT',
+      });
+    }
+
     // Compute local hours of operation at DEP/ARR for the curfew check.
     // ETD input is naive datetime-local (DEP local time). ETA = ETD + cruise
     // hours from the route — same math used elsewhere on this panel.
@@ -3128,7 +3504,7 @@
     const tail = _loadDefault("tail", "");
     const pic = _loadDefault("pic", "");
     if (tail) {
-      ['c2-tail', 'ns-tail', 'rw-tail', 'gt-tail'].forEach(id => {
+      ['c2-tail', 'ns-tail', 'rw-tail', 'ld-tail', 'gt-tail'].forEach(id => {
         const el = document.getElementById(id);
         if (el && [...el.options].some(o => o.value === tail)) el.value = tail;
       });
@@ -3143,7 +3519,7 @@
   }
   // Auto-save defaults on change
   function _wireDefaultSavers() {
-    ['c2-tail', 'ns-tail', 'rw-tail', 'gt-tail'].forEach(id => {
+    ['c2-tail', 'ns-tail', 'rw-tail', 'ld-tail', 'gt-tail'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('change', () => {
         if (el.value) _saveDefault("tail", el.value);
